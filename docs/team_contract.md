@@ -2,7 +2,7 @@
 
 Team Member Name | E-mail     | 
 | :------------- | :----------: |
-|  Peruvian | dlopez1@gmail.com |
+|  David Nico Lopez | dlopez1@gmail.com |
 | Ted Yap | tyap@iwu.edu | 
 | Bhavin Koirala | bkoirala@iwu.edu | 
 
