@@ -1,4 +1,4 @@
-# Cryptopuppies
+# Words With Trees Team Contract
 
 Team Member Name | E-mail     | 
 | :------------- | :----------: |
