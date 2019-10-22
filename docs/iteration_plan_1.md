@@ -2,15 +2,16 @@
 
 ## Iteration 1
 * Display the Tree: Bhavin
-* Marketplace: Nico, Ted 
+* Display Inventory: Nico, Ted
+* Show Branches Available For Purchase: Nico, Ted
 
 ## Iteration 2
 
-* Sign Up: Everyone
-* Login: Everyone
+* Sign Up:
+* Login:
 
 ## Iteration 3
 
-* Buy a Tree Branch: Everyone
-* Write a Message on Tree Branch: Everyone
+* Buy a Tree Branch:
+* Write a Message on Tree Branch:
 
