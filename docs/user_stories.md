@@ -29,47 +29,74 @@ As a User, I want to login to my account so that I can view my inventory, buy, a
    2. User’s name appears at right corner of homepage
    
    
-
-Buy Tree Branches
------------------
-As a User, I want to buy a tree branch so that I can write words on it and add it to my inventory.
-
- - Priority: High
- - Estimate: 1 week
- - Confirmation:
- 
-    1. User is redirected to another webpage where he/she can write a message on the tree branch bought
-    2. “You just bought a tree branch! Now write on it.” message pops up
-    3. User’s token decreases by the price bought
-    
-    
-
-Sell Tree Branches
------------------
-As a User, I want to sell a tree branch so that I can remove it from my inventory and make the tree branch with empty message available for sale again on the Marketplace.
-
- - Priority: High
- - Estimate: 1 week
- - Confirmation:
- 
-   1. “Tree branch successfully removed from your inventory” message pops up
-   2. User’s inventory count is decreased by one.
-   3. User’s token increases by the price sold.
    
-   
-
 Write A Message on Tree Branch
 -----------------
 As a User, I want to write a message on a tree branch bought so that my message shows up on my tree branch in the Marketplace.
 
- - Priority: Medium
+ - Priority: High
  - Estimate: 1 week
  - Confirmation:
  
    1. “You’ve successfully write a message on your tree branch” message pops up
    2. Tree branch message box is not empty
    3. User is redirected to Marketplace
+   
 
+Buy Tree Branches (Epic)
+-----------------
+As a User, I want to buy a tree branch so that I can write words on it and add it to my inventory.
+
+ - Priority: Low
+ - Estimate: 2 week
+ - Confirmation:
+ 
+    1. Click on a branch that can be bought.
+    2. User is redirected to a page that shows how much tokens it would cost and who currents owns it.
+    3. If the user has enough tokens to buy, then confirming purhcase will change ownership of the branch to the user who bought it.
+    4. Confirm that branch is no longer listed as available for purchase.
+    5. Confirm that the user's token has decreased by the price of the branch.
+    6. User who just bought the branch is prompted for custom text that will be displayed on the branch.
+    7. User’s token decreases by the price bought
+    8. Confirm that user who owns the branch has more tokens.
+    
+ 
+Token Possession
+-----------------
+As a user, I want to be able to tell how many tokens I have in my possession.
+
+  - Priority: High
+  - Estimate: 1 day
+  - Confirmation:
+  
+    1. User accesses any page while logged in.
+    2. User can see the number of token in their poessession on the top right corner.
+
+
+   
+Display the Tree
+-----------------
+As a user, I want to be able to view the tree on the homepage.
+ 
+  - Priority: High
+  - Estimate: 1 week
+  - Confirmation:
+  
+    1. User accesses any page.
+    2. A tree is displayed on the page with the correct number of layers.
+
+
+
+Sell Tree Branches
+-----------------
+As a User, I want to sell a tree branch for a price and make it available to be bought in the marketplace("the forest").
+ - Priority: High
+ - Estimate: 1 week
+ - Confirmation:
+ 
+   1. User access the homepage and clicks on a branch that they owns.
+   2. User clicks on the sell button and is prompted for a starting price.
+   
 
 
 Delete Account
