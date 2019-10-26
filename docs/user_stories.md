@@ -89,13 +89,41 @@ As a user, I want to be able to view the tree on the homepage.
 
 Sell Tree Branches
 -----------------
-As a User, I want to sell a tree branch for a price and make it available to be bought in the marketplace("the forest").
+As a User, I want to sell a tree branch for a price and make it available to be bought in the Marketplace.
  - Priority: High
  - Estimate: 1 week
  - Confirmation:
  
    1. User access the homepage and clicks on a branch that they owns.
    2. User clicks on the sell button and is prompted for a starting price.
+   
+   
+   
+Sell Tree Branches
+-----------------
+As a User, I want to sell a tree branch for a price and make it available to be bought in the Marketplace.
+ - Priority: High
+ - Estimate: 1 week
+ - Confirmation:
+ 
+   1. User access the homepage and clicks on a branch that they owns.
+   2. User clicks on the sell button and is prompted for a starting price.
+   
+   
+   
+Bid For New Branches
+-----------------
+As a User, I want to bid for a branch in the new layer so that there is a chance that I can own it when auction ends. 
+ - Priority: Medium
+ - Estimate: 1 week
+ - Confirmation:
+ 
+   1. User accesss homepage and waits for new layer of tree to grow.
+   2. User clicks on a branch from the new layer that they want to buy
+   3. User is prompted for the number of tokens that they want to bid.
+   4. If user has enough tokens, the add that bid to the branch.
+   5. If there were no higher bids at the end of the auction, the user is now the owner of the branch.
+ 
    
 
 
@@ -124,6 +152,37 @@ As a User, I want to buy and sell tree branches at the Marketplace so I can chan
     1. User’s total number of tokens will change depending on if they sold or bought a branch
     2. The user’s inventory will be updated depending on what was bought or sold in the marketplace.
     3. The contents of the Marketplace will be updated if the user buys or sells an item.
+    
+    
+    
+Show Branches Available For Purchase
+-----------------
+As a User, I want to view tree branches available for purchase so that I can choose which branch to buy.
+
+ - Priority: High
+ - Estimate: 1 week
+ - Confirmation:
+ 
+    1. Tree branches avalaible for purchase are highlighted for the User to see.
+    
+    
+    
+Display Inventory
+-----------------
+As a User, I want to view tree branches owned by me so that I can sell.
+
+ - Priority: High
+ - Estimate: 1 week
+ - Confirmation:
+ 
+    1. Tree branches owned by the User are highlighted for the User to see.
+    2. When the User clicks on one of the User's branches, the User can sell the branch
+    
+
+    
+    
+    
+    
  
  
 
