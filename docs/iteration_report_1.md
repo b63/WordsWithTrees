@@ -17,6 +17,10 @@ For the client side of the application, we decided that recruiting the help of a
 
 We also came up with a rudimentary design of a database for storing information about the branches. The 'branches' table contains columns such as text, owner_id, price, etc. The table will have a relation with another table called 'users' when we we create the sign up and login pages.
 
+Regarding the template, we created a barebones layout that will help us interact with the website. Most of the processes will be happening in the backend, so we created a rough template of what we predict we will need to interact with the frontend.
+
+### Struggles
+Our main difficulty is that we believed that we could immediately start coding, but soon we came to the realization that there were more things that we needed to plan beforehand. When thinking about the tree and deciding how we will store the information for each branch, we struggled comming up with a concensus on what is the best way to do that. The problem that we were facing was that we should have enough information to consistenly create the same tree and all of the information to generate it should be stored in the database. Our meeting on Saturday was primarily to plan what information our database would hold and what were the best tools to create the fractal tree. Moreover, on an individual basis, we had to get acquainted with the tools that we were going to use like EASEL. The problem was that there was not that much documentation for it and some things were not completely clear. We believe that there is still a lot more to do with regards to planning, but we prepared to pivot as the project continues.
 
 ## Plan for Iteration 2
 * Login In: Bhavin, Nico, Ted
