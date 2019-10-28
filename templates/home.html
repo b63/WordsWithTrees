@@ -7,7 +7,11 @@
 
 {% block body %}
   <div>
-    <p>canvas stuff</p>
+    <canvas id="tree_canvas" width="600px" height="600px">
+      Your browser is shit, it doesn't support canvas. Upgrade it if you wish to see the light.
+    </canvas>
+    <input id="max-depth-textbox" value="10" type="text">
+    <button id="generate-button" >Generate</button>
   </div>
   <div>
     <p>side bar</p>
@@ -15,5 +19,6 @@
 {% endblock %}
 
 {% block scripts %}
+  <script src="https://code.createjs.com/1.0.0/easeljs.min.js" ></script>
   <script src="{{ url_for("static", filename="js/tree.js") }}"></script>
 {% endblock %}

@@ -1,6 +1,7 @@
 venv/
 venv-win/
 __pycache__/
+lib/
 
 # database
 *.db
