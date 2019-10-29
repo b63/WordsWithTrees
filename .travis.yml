@@ -5,3 +5,7 @@ python:
 # command to install dependencies
 install:
   - pip install flask
+  - pip install pytest
+
+script:
+  - pytest tests

@@ -1,7 +1,7 @@
 venv/
 venv-win/
 __pycache__/
-lib/
+wordstree/lib/
 
 # database
 *.db
