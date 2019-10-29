@@ -3,7 +3,8 @@ import sys
 import tempfile
 import pytest
 
-from wordstree import app, init_db, get_db
+from wordstree import app
+from wordstree.app import init_db, get_db
 
 
 @pytest.fixture
