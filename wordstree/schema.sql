@@ -1,5 +1,8 @@
 drop table if exists branches;
+<<<<<<< HEAD
 drop table if exists users;
+=======
+>>>>>>> origin/master
 
 create table branches (
   id integer primary key autoincrement,
