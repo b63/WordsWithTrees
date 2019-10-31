@@ -1,30 +1,34 @@
-import os
+import click
 from sqlite3 import dbapi2 as sqlite3
-from flask import Flask, request, g, redirect, url_for, render_template, flash
+from flask import current_app, g
+from flask.cli import with_appcontext
 
-from wordstree import app
 
-
-def connect_db():
-    """Connects to the specific database."""
-    rv = sqlite3.connect(app.config['DATABASE'])
-    rv.row_factory = sqlite3.Row
-    return rv
+def init_app(app):
+    app.teardown_appcontext(close_db)
+    app.cli.add_command(initdb_command)
 
 
 def init_db():
     """Initializes the database."""
     db = get_db()
-    with app.open_resource('schema.sql', mode='r') as f:
+    with current_app.open_resource('schema.sql', mode='r') as f:
         db.cursor().executescript(f.read())
-    db.commit()
 
 
-@app.cli.command('initdb')
+@click.command('initdb')
+@with_appcontext
 def initdb_command():
     """Creates the database tables."""
     init_db()
     print('Initialized the database.')
+
+
+def connect_db():
+    """Connects to the specific database."""
+    rv = sqlite3.connect(current_app.config['DATABASE'])
+    rv.row_factory = sqlite3.Row
+    return rv
 
 
 def get_db():
@@ -32,23 +36,13 @@ def get_db():
     current application context.
     """
     if not hasattr(g, 'sqlite_db'):
+        print('new connection')
         g.sqlite_db = connect_db()
     return g.sqlite_db
 
 
-@app.teardown_appcontext
 def close_db(error):
     """Closes the database again at the end of the request."""
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
-
-
-@app.route('/')
-def home():
-    """ Handles requests to the root page """
-    return render_template('home.html')
-
-
-@app.route('/favicon.ico')
-def favicon():
-    return app.send_static_file('favicon.ico')
+        #del g['sqlite_db']

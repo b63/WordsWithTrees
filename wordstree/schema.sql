@@ -1,3 +1,5 @@
+drop table if exists branches;
+
 create table branches (
   id integer primary key autoincrement,
   "text" text not null,
