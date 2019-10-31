@@ -1,6 +1,7 @@
 import os
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, g, redirect, url_for, render_template, flash
+from werkzeug.security import generate_password_hash
 
 # create our little application :)
 app = Flask(__name__)
@@ -53,11 +54,76 @@ def close_db(error):
 
 
 @app.route('/')
+def root():
+    """ Handles requests to the root page. """
+    return render_template('signup.html')
+
+
+@app.route('/home')
 def home():
-    """ Handles requests to the root page """
+    """ Handles requests to the root page. """
     return render_template('home.html')
 
 
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('favicon.ico')
+
+
+@app.route('/register', methods=['POST'])
+def register_form():
+    """ Register user with a form. """
+
+    # ensure name was submitted
+    if not request.form.get("name"):
+        flash("You must provide a name")
+        return redirect(url_for('register_form'))
+
+    # ensure username was submitted
+    if not request.form.get("username"):
+        flash("You must provide a username")
+        return redirect(url_for('register_form'))
+
+    # ensure password was submitted
+    if not request.form.get("password"):
+        flash("You must provide a password")
+        return redirect(url_for('register_form'))
+
+    # ensure password confirmation was submitted
+    if not request.form.get("password-confirm"):
+        flash("You must provide a password confirmation")
+        return redirect(url_for('register_form'))
+
+    # ensure password and confirmation match
+    if request.form.get("password") != request.form.get("password-confirm"):
+        flash("Your passwords must match")
+        return redirect(url_for('register_form'))
+
+    # hash password to not store the actual password
+    password = request.form.get("password")
+    hash_password = generate_password_hash(password)
+    db = get_db()
+
+    # username must be unique
+    try:
+        db.execute("INSERT INTO users (name, username, hash_password) VALUES (?, ?, ?)",
+                   [request.form.get("name"), request.form.get("username"), hash_password])
+    except sqlite3.IntegrityError:
+        # pick another username
+        flash("Your username has been used. Pick another username")
+        return redirect(url_for('register_form'))
+
+    # store their id in session to log them in automatically
+    db.commit()
+    return redirect(url_for('home'))
+
+
+@app.route('/register', methods=['GET'])
+def register_page():
+    """ Redirect to register form """
+    return render_template("signup.html")
+
+
+
+
+
