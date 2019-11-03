@@ -1,22 +1,16 @@
 {% extends "layout.html" %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" >
-  <title>Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}" >
+  <title>Register</title>
 {% endblock %}
 
 {% block body %}
-  <div class = "row">
-    <section class ="col-8 canv">
-      <canvas id="tree_canvas" width="700px" height="700px">
-      </canvas>
-      <input id="max-depth-textbox" value="10" type="text">
-      <button id="generate-button" >Generate</button>
-    </section>
-    <aside class = "col-4 info">
-      <button type="button" class="btn btn-outline-success profile-btn">Profile</button>
-      <button type="button" class="btn btn-outline-success token-btn">Get Tokens</button>
+  <div class = "container-fluid">
+    <div class="row">
       <p class = "banner">Words with Trees</p>
+    </div>
+    <div class="row">
       <div class = "border border-success rounded content">
           {% for message in get_flashed_messages() %}
             <div class="flash">{{ message }}</div>
@@ -45,13 +39,9 @@
            </form>
 
       </div>
-      <button type="button" class="btn btn-outline-success sell-btn">Sell</button>
-      <button type="button" class="btn btn-outline-success buy-btn">Buy</button>
-    </aside>
+    </div>
   </div>
 {% endblock %}
 
 {% block scripts %}
-  <script src="https://code.createjs.com/1.0.0/easeljs.min.js" ></script>
-  <script src="{{ url_for("static", filename="js/tree.js") }}"></script>
 {% endblock %}
