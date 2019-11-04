@@ -56,6 +56,7 @@ def register_form():
     user_id = cur.fetchone()
     
     session['user_id'] = user_id['id']
+
     return redirect(url_for('root.home'))
 
 
