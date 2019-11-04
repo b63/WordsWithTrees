@@ -1,6 +1,6 @@
 from wordstree.db import get_db
 from sqlite3 import dbapi2 as sqlite3
-from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app
+from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
 from werkzeug.security import generate_password_hash
 
 bp = Blueprint('auth', __name__)
@@ -49,8 +49,14 @@ def register_form():
         flash("Your username has been used. Pick another username")
         return redirect(url_for('auth.register_form'))
 
-    # store their id in session to log them in automatically
     db.commit()
+    # store their id in session to log them in automatically
+    cur = db.execute("SELECT id FROM users WHERE username=(?)",
+                         [request.form.get("username")])
+    user_id = cur.fetchone()
+    
+    session['user_id'] = user_id['id']
+
     return redirect(url_for('root.home'))
 
 
