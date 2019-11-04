@@ -21,6 +21,9 @@ is performance: we need a some way of rendering only a few branches visible on t
 
 On the login and signup side of things, the backend development went smoothy since we had a guide we could reference when issues cropped up. Although the signup branch has been merged into master, the login branch has not been merged as of the time of writing this report. This is partly due to the fact that the unit test for login has not been done yet. One thing that we need to test is whether or not our application can be logged by multiple users at the same time.
 
+## Important Lessons Learned
+By repeatedly having to fetch new changes, resolve merge conflicts and push new changes throughout the development process, we gradually learned to use git more effectively instead of stumbling into a working solution. There were numerous times when we found the `git stash` command really helpful: if a teammate pushed new changes they had been working on while local changes had yet to be finalized for a commit, stashing the local changes then applying them later after pulling the new changes made by the teammate saved a lot of messing about when pushing the local changes later on. We also learned that frequently pulling new changes from the master branch is a good idea, instead of doing a massive merge later on which might involve resolving nasty merge conflicts.   
+
 ## Plan for Iteration 3
 * Not a random Tree: Nico, Bhavin
 	*  Work on coordinating the creation of tree with the backend so that a new random tree isn't generated every time the home page is reloaded.
