@@ -36,5 +36,5 @@ On the login and signup side of things, the backend development went smoothy sin
 * Work on User Interaction: Put finishing touches and polish user interactions. By the end of this iteration, the plan is to have the user interactions with the application smooth and look nice.
 
 ## Plan for Iteration 5
-* Continue making UI improvements, and polishing websites by restructing the website, fixing any glitches or hiccups, and using CSS/Javascript animations to make the user experience feel smooth since it is unlikely that it will as poslished as we would want it to be with just one week of work.
+* Continue making UI improvements, and polishing the website by restructuring the website, fixing any glitches or hiccups, and possibly using CSS/Javascript animations to make the user experience feel smooth since it is unlikely that it will as poslished as we would want it to be with just one week of work.
 * Work on features/user stories that were not completed from the previous iteration.
