@@ -37,9 +37,9 @@ def register_form():
 
     # ensure password meets policy
     # https://stackoverflow.com/questions/17140408/if-statement-to-check-whether-a-string-has-a-capital-letter-a-lower-case-letter/17140466
-    rules = [lambda s: any(x.isupper() for x in request.form.get("password")),  # must have at least one uppercase
-             lambda s: any(x.islower() for x in request.form.get("password")),  # must have at least one lowercase
-             lambda s: any(x.isdigit() for x in request.form.get("password")),  # must have at least one digit
+    rules = [lambda s: any(x.isupper() for x in s),  # must have at least one uppercase
+             lambda s: any(x.islower() for x in s),  # must have at least one lowercase
+             lambda s: any(x.isdigit() for x in s),  # must have at least one digit
              lambda s: len(s) >= 7  # must be at least 7 characters
              ]
 

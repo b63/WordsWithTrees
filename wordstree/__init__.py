@@ -26,4 +26,7 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
+    from . import view_inventory
+    app.register_blueprint(view_inventory.bp)
+
     return app
