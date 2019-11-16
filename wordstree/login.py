@@ -29,7 +29,7 @@ def login_form():
     # ensure username exists and password is correct
     if user_data is None or not check_password_hash(user_data["hash_password"], request.form.get("password")):
         flash("Invalid username and/or password")
-        return redirect(url_for('login.login_page'))
+        return render_template("login.html")
 
     # remember which user has logged in
     session["user_id"] = user_data["id"]
