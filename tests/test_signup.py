@@ -28,7 +28,6 @@ def testing_signup(client, app):
 def test_flash_messages(client):
     # testing name
     rv = client.post('/signup', data={
-        'name': '',
         'username': 'nick',
         'password': 'qwertY123',
         'password-confirm': 'qwertY123'}, follow_redirects = True)
@@ -38,7 +37,6 @@ def test_flash_messages(client):
     # testing flash for username
     rv = client.post('/signup', data={
         'name': 'Person',
-        'username': '',
         'password': 'qwertY123',
         'password-confirm': 'qwertY123'},follow_redirects = True )
     cur = rv.data
@@ -48,7 +46,6 @@ def test_flash_messages(client):
     rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
-        'password': '',
         'password-confirm': 'qwertY123'}, follow_redirects = True)
     cur = rv.data
     assert b'You must provide a password' in cur
@@ -57,8 +54,7 @@ def test_flash_messages(client):
     rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
-        'password': 'qwertY123',
-        'password-confirm': ''}, follow_redirects = True)
+        'password': 'qwertY123'}, follow_redirects = True)
     cur = rv.data
     assert b'You must provide a password confirmation' in cur
 
