@@ -8,10 +8,9 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/form-validation.css') }}">
 
-    <!-- <link rel="stylesheet" href="../static/css/signup.css"> -->
   </head>
   <title>Sign Up</title>
 
@@ -22,9 +21,13 @@
         <h1 class="h4 mb-3 font-weight-normal">Create your account</h1>
       </div>
 
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-primary" role="alert">{{ message }}</div>
+      {% endfor %}
+
       <div class="mb-3">
         <label for="name">Name</label>
-        <input name="name" type="text" class="form-control" required autofocus>
+        <input name="name" type="text" value="{{ request.form['name'] }}" class="form-control" required autofocus>
         <div class="invalid-feedback">
           You must provide a name.
         </div>
@@ -32,14 +35,14 @@
 
       <div class="mb-3">
         <label for="username">Username</label>
-        <input name="username" type="text" class="form-control" required>
+        <input name="username" type="text" value="{{ request.form['username'] }}" class="form-control" required>
         <div class="invalid-feedback">
           You must provide a username.
         </div>
       </div>
 
       <div class="mb-3">
-        <label for="password" class="text-left">Password</label>
+        <label for="password" class="text-left">Password <span class="text-muted">(Minimum 7 characters, with at least one uppercase, one lowercase, and one digit)</span></label>
         <input name="password" type="password" class="form-control" required>
         <div class="invalid-feedback">
           You must provide a password.
@@ -54,9 +57,6 @@
         </div>
       </div>
       <button class="btn btn-lg btn-block btn-primary mb-2" type="submit">Register & Log in</button>
-      {% for message in get_flashed_messages() %}
-      <div class="alert alert-primary" role="alert">{{ message }}</div>
-      {% endfor %}
     </form>
     <script>
       // Example starter JavaScript for disabling form submissions if there are invalid fields
