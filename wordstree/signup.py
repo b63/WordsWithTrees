@@ -3,11 +3,11 @@ from sqlite3 import dbapi2 as sqlite3
 from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
 from werkzeug.security import generate_password_hash
 
-bp = Blueprint('auth', __name__)
+bp = Blueprint('signup', __name__)
 
 
-@bp.route('/register', methods=['POST'])
-def register_form():
+@bp.route('/signup', methods=['POST'])
+def signup_as_post():
     """ Register user with a form. """
 
     # ensure name was submitted
@@ -72,7 +72,7 @@ def register_form():
     return redirect(url_for('root.home'))
 
 
-@bp.route('/register', methods=['GET'])
-def register_page():
+@bp.route('/signup', methods=['GET'])
+def signup_as_get():
     """ Redirect to register form """
     return render_template("signup.html")

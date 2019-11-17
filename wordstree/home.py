@@ -11,7 +11,7 @@ def home():
     """ Handles requests to the root page """
     if request.method == 'POST':
         if 'sign up' in request.form:
-            return redirect(url_for("auth.register_page"))
+            return redirect(url_for("signup.signup_as_get"))
         elif 'log in' in request.form:
             return redirect(url_for("login.login_page"))
 

@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash
 
 def testing_signup(client, app):
     with app.app_context():
-        rv = client.post('/register', data = {
+        rv = client.post('/signup', data = {
             'name':'Person',
             'username': 'nick',
             'password':'qwertY123',
@@ -27,7 +27,7 @@ def testing_signup(client, app):
 ''''''
 def test_flash_messages(client):
     # testing name
-    rv = client.post('/register', data={
+    rv = client.post('/signup', data={
         'name': '',
         'username': 'nick',
         'password': 'qwertY123',
@@ -36,7 +36,7 @@ def test_flash_messages(client):
     assert b'You must provide a name' in cur
 
     # testing flash for username
-    rv = client.post('/register', data={
+    rv = client.post('/signup', data={
         'name': 'Person',
         'username': '',
         'password': 'qwertY123',
@@ -45,7 +45,7 @@ def test_flash_messages(client):
     assert b'You must provide a username' in cur
 
     # testing flash for username
-    rv = client.post('/register', data={
+    rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
         'password': '',
@@ -54,7 +54,7 @@ def test_flash_messages(client):
     assert b'You must provide a password' in cur
 
     # testing flash for username
-    rv = client.post('/register', data={
+    rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
         'password': 'qwertY123',
@@ -63,7 +63,7 @@ def test_flash_messages(client):
     assert b'You must provide a password confirmation' in cur
 
     # testing flash for username
-    rv = client.post('/register', data={
+    rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
         'password': 'qwertY123',
