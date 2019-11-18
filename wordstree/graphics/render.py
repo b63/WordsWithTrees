@@ -1,8 +1,11 @@
-import math
 import random
 from typing import List
+import os
 
 import cairo
+from flask import current_app, g
+from flask.cli import with_appcontext
+import click
 
 from wordstree.graphics import *
 from wordstree.graphics.util import Vec, radians, Rect, rectangle_intersect
@@ -14,6 +17,7 @@ BRANCH_LENGTH_DELTA = 0.01
 BRANCH_ANGLE_DELTA = radians(10)
 BRANCH_ANGLES = (radians(20), radians(-20))
 MAX_BRANCH_LENGTH = 0.04
+IMAGE_DIR = 'wordstree/static/images'
 
 
 def generate_root() -> Branch:
@@ -65,21 +69,60 @@ def generate_branches(parent: Branch, layer: int) -> List[Branch]:
     return branches
 
 
+def create_dir(path):
+    """
+    Create directory `path` if the path does not already exist, creating parent directories as needed
+    :param path: path of directory to create
+    """
+    if not os.path.exists(path):
+        try:
+            os.mkdir(path)
+        except FileNotFoundError:
+            parent = os.path.split(path)[0]
+            # create parent directory
+            create_dir(parent)
+
+            os.mkdir(path)
+        except FileExistsError:
+            return
+
+
+def create_surface(zoom=0):
+    dir = os.path.join(IMAGE_DIR, 'svg')
+    create_dir(dir)
+
+    name = 'tree_z{}.svg'.format(zoom)
+    pfile = os.path.join(dir, name)
+    click.echo('saving svg to {} ...'.format(pfile))
+
+    file = open(pfile, mode='wb')
+    surface = cairo.SVGSurface(file, Renderer.WIDTH, Renderer.HEIGHT)
+    return surface
+
+
+def create_img_file(zoom=0):
+    dir = os.path.join(IMAGE_DIR, 'png')
+    create_dir(dir)
+
+    name = 'tree_z{}.png'.format(zoom)
+    pfile = os.path.join(dir, name)
+    file = open(pfile, mode='wb')
+    return file
+
+
 class Renderer:
     WIDTH = 1024
     HEIGHT = 1024
     MAX_CHILDREN = 2
 
     def __init__(self, max_layers=5):
-        self.surface = cairo.SVGSurface('tree.svg', Renderer.WIDTH, Renderer.HEIGHT)
-
         self.layers = []
         self.max_layers = max_layers
 
         self.__branches = [None for i in range(2 ** max_layers + 1)]
         self.__num_branches = 0
 
-        #self.zoom_levels = [i for i in range(0, max_layers)]
+        # self.zoom_levels = [i for i in range(0, max_layers)]
         self.zoom_levels = [5, 6, 7, 8, 9, 10, 11]
         self.grid_levels = [8, 16, 24, 40, 60]
 
@@ -163,7 +206,9 @@ class Renderer:
             return 0
 
     def render_tree(self, zoom=0):
-        ctx = cairo.Context(self.surface)
+        surface = create_surface(zoom=zoom)
+
+        ctx = cairo.Context(surface)
         self.setup_canvas(ctx)
 
         i, layeri = self.tree_size - 1, len(self.layers) - 1
@@ -180,7 +225,9 @@ class Renderer:
                 layeri -= 1
                 next_layer = self.layers[layeri]
 
-        self.surface.write_to_png('tree.png')
+        png = create_img_file(zoom)
+        click.echo('Saving png to {} ...'.format(png.name))
+        surface.write_to_png(png)
 
     @property
     def branches(self) -> List[Branch]:
@@ -191,7 +238,27 @@ class Renderer:
         return self.__num_branches
 
 
+def init_app(app):
+    app.cli.add_command(render_tree)
+
+
+@click.command('render-tree')
+@click.option('--zoom', default=5,
+              help='\'zoom\' level to render the tree at, higher number means more layers will be visible, defaults '
+                   'to 5 '
+              )
+@click.option('--depth', default=14,
+              help='maximum depth of the tree, defaults to 14')
+def render_tree(zoom, depth):
+    """
+    Renders tree of specified max-depth and at specified zoom level to file.
+    """
+    click.echo('Rendering tree with max depth {} at zoom level {}...'.format(depth, zoom))
+
+    renderer = Renderer(max_layers=depth)
+    renderer.render_tree(zoom=zoom)
+
+
 if __name__ == "__main__":
     renderer = Renderer(max_layers=16)
     renderer.render_tree(zoom=7)
-
