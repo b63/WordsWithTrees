@@ -6,13 +6,16 @@ from werkzeug.security import generate_password_hash
 bp = Blueprint('root', __name__)
 
 
-@bp.route('/home')
-@bp.route('/')
+@bp.route('/', methods=['GET', 'POST'])
 def home():
     """ Handles requests to the root page """
-    if session.get("user_id") is None:
-        return redirect(url_for("login.login_page"))
-    return render_template('home.html')
+    if request.method == 'POST':
+        if 'sign up' in request.form:
+            return redirect(url_for("signup.signup_as_get"))
+        elif 'log in' in request.form:
+            return redirect(url_for("login.login_page"))
+
+    return render_template('index.html')
 
 
 @bp.route('/favicon.ico')

@@ -1,41 +1,31 @@
-{% extends "layout.html" %}
+<!doctype html>
+<html lang="en">
 
-{% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}" >
-  <title>Register</title>
-{% endblock %}
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-{% block body %}
-  <div class = "container-fluid">
-    <div class="row">
-      <p class = "banner">Words with Trees</p>
-    </div>
-    <div class="row">
-      <div class = "border border-success rounded content">
-          {% for message in get_flashed_messages() %}
-            <div class="flash">{{ message }}</div>
-          {% endfor %}
-        <h1 class = "filler pb-1">
-          Log in to your account
-        </h1>
-           <form action="{{ url_for('login.login_form') }}" method="post">
-            <fieldset>
-            <div>
-                <input name="username" placeholder="Username" type="text"/>
-            </div>
-            <div>
-                <input name="password" placeholder="Password" type="password"/>
-            </div>
-            <div>
-                <button type="submit">Log In</button>
-            </div>
-            </fieldset>
-           </form>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <!-- <link rel="stylesheet" href="../static/css/login.css"> -->
+  </head>
+  <title>Log In</title>
 
-      </div>
-    </div>
-  </div>
-{% endblock %}
+  <body class="text-center">
+    <form class="form-signin" action="{{ url_for('login.login_form') }}" method="post">
+      <img src="../static/tree.png" alt="" width="250" height="250">
+      <h1 class="h4 mb-3 font-weight-normal">Log in to Words With Trees</h1>
+      <label for="inputEmail" class="sr-only">Username</label>
+      <input name="username" type="text" value="{{ request.form['username'] }}" id="inputEmail" class="form-control" placeholder="Username" required autofocus>
+      <label for="inputPassword" class="sr-only">Password</label>
+      <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+      <button class="btn btn-lg btn-block btn-primary mb-2" type="submit">Log in</button>
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-primary" role="alert">{{ message }}</div>
+      {% endfor %}
+    </form>
+  </body>
 
-{% block scripts %}
-{% endblock %}
+</html>

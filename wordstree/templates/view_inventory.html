@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+  <title>Home</title>
+{% endblock %}
+
+{% block body %}
+  <div class="container-fluid">
+    <div class="row">
+      <section class="col-8 canv">
+        <div id="canvas-wrapper">
+          <canvas id="tree_canvas">
+          </canvas>
+        </div>
+      </section>
+      <aside class="col-4 info">
+        <button type="button" class="btn btn-outline-success profile-btn">Profile</button>
+        <button type="button" class="btn btn-outline-success token-btn">Get Tokens</button>
+        <p class="banner">Words with Trees</p>
+        <div class="border border-success rounded content">
+          <h1 class="filler pb-1">
+            Your inventory
+          </h1>
+          <ul class="entries">
+          {% for branch in branches %}
+            <li>
+                <h2>{{ branch.text }}</h2>
+                <p> Depth: {{ branch.depth }} </p>
+                <p> Index: {{ branch.index }}</p>
+                <p> Price: {{ branch.price }}</p>
+            </li>
+            {% else %}
+            <li><em>Unbelievable.  You have no branches so far. </em></li>
+            {% endfor %}
+          <ul class="entries">
+
+        </div>
+        <button type="button" class="btn btn-outline-success sell-btn">Sell</button>
+        <button type="button" class="btn btn-outline-success buy-btn">Buy</button>
+      </aside>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
+  <script src="{{ url_for("static", filename="js/ResizeSensor.js") }}"></script>
+  <script src="{{ url_for("static", filename="js/misc.js") }}"></script>
+  <script src="{{ url_for("static", filename="js/branch.js") }}"></script>
+  <script src="{{ url_for("static", filename="js/tree.js") }}"></script>
+  <script src="{{ url_for("static", filename="js/init.js") }}"></script>
+{% endblock %}
