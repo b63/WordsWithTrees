@@ -1,0 +1,41 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #f7f7ea;
+}
+
+.form {
+  width: 100%;
+  max-width: 330px;
+  padding: 15px;
+  margin: auto;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #613816;
+    border-color: #613816; /*set the color you want here*/
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+    color: #fff;
+    background-color: #4C2C11;
+    border-color: #4C2C11; /*set the color you want here*/
+}
+
+.btn-outline-primary {
+    color: #613816;
+    border-color: #613816; /*set the color you want here*/
+}
+.btn-outline-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+    color: #fff;
+    background-color: #613816;
+    border-color: #613816; /*set the color you want here*/
+}
