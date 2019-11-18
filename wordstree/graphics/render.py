@@ -4,7 +4,8 @@ from typing import List
 
 import cairo
 
-from wordstree.graphics import Vec, radians
+from wordstree.graphics import *
+from wordstree.graphics.util import Vec, radians, Rect, rectangle_intersect
 from wordstree.graphics.branch import Branch
 
 BRANCH_LENGTH_SHRINK_FACTOR = 0.97
@@ -193,3 +194,4 @@ class Renderer:
 if __name__ == "__main__":
     renderer = Renderer(max_layers=16)
     renderer.render_tree(zoom=7)
+

@@ -2,7 +2,7 @@ import math
 import cairo
 from typing import Dict, Tuple
 
-from wordstree.graphics import Vec, degrees
+from wordstree.graphics.util import Vec, degrees
 
 
 class Branch:
