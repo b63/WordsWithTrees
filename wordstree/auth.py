@@ -1,6 +1,6 @@
 from wordstree.db import get_db
 from sqlite3 import dbapi2 as sqlite3
-from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app
+from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
 from werkzeug.security import generate_password_hash
 
 bp = Blueprint('auth', __name__)
@@ -35,6 +35,18 @@ def register_form():
         flash("Your passwords must match")
         return redirect(url_for('auth.register_form'))
 
+    # ensure password meets policy
+    # https://stackoverflow.com/questions/17140408/if-statement-to-check-whether-a-string-has-a-capital-letter-a-lower-case-letter/17140466
+    rules = [lambda s: any(x.isupper() for x in request.form.get("password")),  # must have at least one uppercase
+             lambda s: any(x.islower() for x in request.form.get("password")),  # must have at least one lowercase
+             lambda s: any(x.isdigit() for x in request.form.get("password")),  # must have at least one digit
+             lambda s: len(s) >= 7  # must be at least 7 characters
+             ]
+
+    if not all(rule(request.form.get("password")) for rule in rules):
+        flash("Password must have at least 7 characters, including at least one uppercase, one lowercase, and one digit")
+        return redirect(url_for('auth.register_form'))
+
     # hash password to not store the actual password
     password = request.form.get("password")
     hash_password = generate_password_hash(password)
@@ -49,8 +61,14 @@ def register_form():
         flash("Your username has been used. Pick another username")
         return redirect(url_for('auth.register_form'))
 
-    # store their id in session to log them in automatically
     db.commit()
+    # store their id in session to log them in automatically
+    cur = db.execute("SELECT id FROM users WHERE username=(?)",
+                         [request.form.get("username")])
+    user_id = cur.fetchone()
+    
+    session['user_id'] = user_id['id']
+
     return redirect(url_for('root.home'))
 
 
