@@ -2,6 +2,8 @@ language: python
 python:
   - "3.7"  # test with a recent version
 
+before_install:
+  - sudo apt-get -y install cairo
 # command to install dependencies
 install:
   - pip install flask
