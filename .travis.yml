@@ -6,6 +6,7 @@ python:
 install:
   - pip install flask
   - pip install pytest
+  - pip install cairo
 
 script:
   - pytest tests
