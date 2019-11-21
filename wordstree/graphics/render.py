@@ -88,31 +88,30 @@ def create_dir(path):
 
 
 def create_surface(zoom=0):
-    dir = os.path.join(IMAGE_DIR, 'svg')
-    create_dir(dir)
+    # name = 'tree_z{}.svg'.format(zoom)
+    # file = create_img_file(name, path='svg/')
 
-    name = 'tree_z{}.svg'.format(zoom)
-    pfile = os.path.join(dir, name)
-    click.echo('saving svg to {} ...'.format(pfile))
+    # click.echo('saving svg to {} ...'.format(file.name))
 
-    file = open(pfile, mode='wb')
-    surface = cairo.SVGSurface(file, Renderer.WIDTH, Renderer.HEIGHT)
+    surface = cairo.RecordingSurface(
+        cairo.Content.COLOR_ALPHA,
+        cairo.Rectangle(0, 0, Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT)
+    )
     return surface
 
 
-def create_img_file(zoom=0):
-    dir = os.path.join(IMAGE_DIR, 'png')
+def create_img_file(name, path=''):
+    dir = os.path.join(IMAGE_DIR, path)
     create_dir(dir)
 
-    name = 'tree_z{}.png'.format(zoom)
     pfile = os.path.join(dir, name)
     file = open(pfile, mode='wb')
     return file
 
 
 class Renderer:
-    WIDTH = 1024
-    HEIGHT = 1024
+    BASE_WIDTH = 1024
+    BASE_HEIGHT = 1024
     MAX_CHILDREN = 2
 
     def __init__(self, max_layers=5):
@@ -124,7 +123,7 @@ class Renderer:
 
         # self.zoom_levels = [i for i in range(0, max_layers)]
         self.zoom_levels = [5, 6, 7, 8, 9, 10, 11]
-        self.grid_levels = [8, 16, 24, 40, 60]
+        self.grid_levels = [4, 8, 16, 24, 40, 60]
 
         self.create_branches()
 
@@ -162,7 +161,7 @@ class Renderer:
         self.__num_branches = end
 
     def setup_canvas(self, ctx):
-        ctx.scale(Renderer.WIDTH, Renderer.HEIGHT)
+        ctx.scale(Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT)
 
         # draw white background
         ctx.set_source_rgb(1, 1, 1)
@@ -225,9 +224,39 @@ class Renderer:
                 layeri -= 1
                 next_layer = self.layers[layeri]
 
-        png = create_img_file(zoom)
-        click.echo('Saving png to {} ...'.format(png.name))
-        surface.write_to_png(png)
+        self.cache_tree(surface, zoom)
+
+    def cache_tree(self, surface: cairo.Surface, zoom: int):
+        pat = cairo.SurfacePattern(surface)
+
+        grid = self.grid_levels[zoom]
+
+        # dimension of each tile
+        dimx, dimy = Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT
+        # dimension of each tile in the original image
+        grid_dx = Renderer.BASE_WIDTH / grid
+        grid_dy = Renderer.BASE_HEIGHT / grid
+
+        scale = grid_dx / dimx
+
+        dir = 'png/zoom_{}'.format(zoom)
+
+        for i in range(grid):
+            x = i * grid_dx
+            for j in range(grid):
+                tile = cairo.ImageSurface(cairo.Format.RGB24, dimx, dimy)
+                ctx = cairo.Context(tile)
+
+                y = j * grid_dy
+                mat = cairo.Matrix(xx=scale, yy=scale, x0=x, y0=y)
+
+                pat.set_matrix(mat)
+                ctx.set_source(pat)
+                ctx.paint()
+
+                file = create_img_file('z{}_{:.0f}x{:.0f}@{}_{}.png'.format(zoom, grid_dx, grid_dy, i, j), path=dir)
+                click.echo('Saving tile at ({:.2f}, {:.2f}) to {}'.format(x, y, file.name))
+                tile.write_to_png(file)
 
     @property
     def branches(self) -> List[Branch]:
