@@ -1,21 +1,24 @@
 import math
 import cairo
 from typing import Dict, Tuple
+import json
 
-from wordstree.graphics.util import Vec, degrees
+from wordstree.graphics.util import Vec, degrees, JSONifiable
 
 
-class Branch:
+class Branch(JSONifiable):
     DEFAULT_LENGTH = 0.005
     DEFAULT_WIDTH = 0.0005
     DEFAULT_ANGLE = 3 * math.pi / 2
+    JSON_KEYS = ['index', 'pos', 'depth', 'length', 'width', 'angle']
 
-    def __init__(self, pos: Vec = None, **props: Dict):
+    def __init__(self, index, pos: Vec = None, **kwargs):
+        self.__index = index
         self.__pos = pos if pos else Vec(0, 0)
-        self.__depth = props.get('depth', 0)
-        self.__length = props.get('length', Branch.DEFAULT_LENGTH)
-        self.__width = props.get('width', Branch.DEFAULT_WIDTH)
-        self.__angle = props.get('angle', Branch.DEFAULT_ANGLE)
+        self.__depth = kwargs.get('depth', 0)
+        self.__length = kwargs.get('length', Branch.DEFAULT_LENGTH)
+        self.__width = kwargs.get('width', Branch.DEFAULT_WIDTH)
+        self.__angle = kwargs.get('angle', Branch.DEFAULT_ANGLE)
 
     def hit_test(self, x, y):
         cos_theta = math.cos(self.angle)
@@ -27,7 +30,7 @@ class Branch:
         nx = x * cos_theta + y * sin_theta
         ny = -x * sin_theta + y * cos_theta
 
-        halfw = self.width/2
+        halfw = self.width / 2
 
         print('testing hit ({:.2f}, {:.2f})...'.format(nx, ny))
         if (0 < nx < self.length) and (-halfw < ny < halfw):
@@ -59,6 +62,10 @@ class Branch:
         ctx.restore()
 
     @property
+    def index(self):
+        return self.__index
+
+    @property
     def pos(self):
         return self.__pos
 
@@ -78,10 +85,23 @@ class Branch:
     def angle(self):
         return self.__angle
 
+    def json_obj(self):
+        dic = dict()
+
+        for key in Branch.JSON_KEYS:
+            if key == 'pos':
+                dic[key] = self.pos.json_obj()
+            else:
+                dic[key] = self.__getattribute__(key)
+        return dic
+
     def __str__(self):
         return 'Branch@{}[{:.2f}x{:.2f}@{:.2f}]'.format(self.pos, self.length, self.width, degrees(self.angle))
 
-    __repr__ = __str__
+    def __repr__(self):
+        dic = self.json_obj()
+
+        return json.dumps(dic)
 
 
 def get_branch_color(branch: Branch) -> Tuple[float, float, float]:

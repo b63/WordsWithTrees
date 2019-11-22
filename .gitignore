@@ -2,6 +2,7 @@ venv/
 venv-win/
 __pycache__/
 wordstree/lib/
+wordstree/cache/
 
 # database
 *.db

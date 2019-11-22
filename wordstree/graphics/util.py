@@ -1,5 +1,66 @@
-from typing import Tuple
+import os
 from wordstree.graphics import *
+import json
+
+
+class JSONifiable:
+    def json_obj(self):
+        pass
+
+
+def create_dir(path):
+    """
+    Create directory `path` if the path does not already exist, creating parent directories as needed
+    :param path: path of directory to create
+    """
+    if not os.path.exists(path):
+        try:
+            os.mkdir(path)
+        except FileNotFoundError:
+            parent = os.path.split(path)[0]
+            # create parent directory
+            create_dir(parent)
+
+            os.mkdir(path)
+        except FileExistsError:
+            return
+
+
+def create_file(fpath, relative=''):
+    """
+    Returns a file object pointing to file located at `fpath` that is open for writing. Parent directories are
+    created as needed.
+    Note: Callee is responsible for closing the file.
+
+    :param fpath: path to file
+    :param relative: if `fpath` is a not an absolute path, what the path is relative to
+    :return: file object open for writing
+    """
+    if not os.path.isabs(fpath):
+        fpath = os.path.join(relative, fpath)
+
+    if os.path.exists(fpath):
+        if os.path.isdir(fpath):
+            raise IsADirectoryError(r"'{}' is a directory".format(fpath.name))
+        file = open(fpath, mode='w')
+    else:
+        dir, fname = os.path.split(fpath)
+        create_dir(dir)
+
+        file = open(fpath, mode='w')
+
+    return file
+
+
+def open_file(fpath, relative=''):
+    if not os.path.isabs(fpath):
+        fpath = os.path.join(relative, fpath)
+
+    if not os.path.exists(fpath):
+        raise FileNotFoundError('"{}" does not exist'.format(fpath))
+
+    file = open(fpath, mode='r')
+    return file
 
 
 def degrees(rad: float) -> float:
@@ -19,7 +80,7 @@ def radians(deg: float) -> float:
     return deg / DEG_RAD
 
 
-class Vec:
+class Vec(JSONifiable):
     """Represents vector in 2D. Offers overloaded `__str__` method for easier printing.
     """
 
@@ -38,7 +99,13 @@ class Vec:
     def __str__(self):
         return '({:.2f}, {:.2f})'.format(self.__x, self.__y)
 
-    __repr__ = __str__
+    def json_obj(self):
+        dic = {'x': self.x, 'y': self.y}
+        return dic
+
+    def __repr__(self):
+        dic = self.json_obj()
+        return json.dumps(dic)
 
 
 class Rect(object):
@@ -131,6 +198,7 @@ def rectangle_intersect(rect1: Rect, rect2: Rect):
     :param rect2:`Rect` object representing one of the rectangles
     :return: whether the two rectangles intersect or not
     """
+
     def check_projection_overlap(angle: float, rect1: Rect, rect2: Rect) -> bool:
         left1, right1 = project_rectangle(angle, rect1)
         left2, right2 = project_rectangle(angle, rect2)
@@ -162,4 +230,3 @@ def rectangle_intersect(rect1: Rect, rect2: Rect):
 
     # rectangles intersect
     return True
-
