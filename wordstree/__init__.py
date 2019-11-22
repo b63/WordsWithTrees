@@ -20,8 +20,8 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
-    from .graphics import render
-    render.init_app(app)
+    from .graphics import cli as graphics_cli
+    graphics_cli.init_app(app)
 
     from . import home
     app.register_blueprint(home.bp)
