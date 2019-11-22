@@ -12,7 +12,7 @@ def init_app(app):
 def init_db():
     """Initializes the database."""
     db = get_db()
-    with current_app.open_resource('schema.sql', mode='r') as f:
+    with current_app.open_resource('schemas/schema.sql', mode='r') as f:
         db.cursor().executescript(f.read())
 
 
