@@ -9,7 +9,10 @@ bp = Blueprint('root', __name__)
 @bp.route('/')
 def home():
     """ Handles requests to the root page """
-    return render_template('index.html')
+    if session.get("user_id") is not None:
+        return redirect(url_for("view_inventory.view_inventory"))
+    else:
+        return render_template('index.html')
 
 
 @bp.route('/favicon.ico')
