@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -7,11 +8,13 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     {% block head %}{% endblock %}
   </head>
+
   <body>
+    <!-- Navigation bar -->
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
       <a class="navbar-brand" href="{{ url_for('root.home') }}">
         <img src="../static/tree.png" height="30" width="30" class="d-inline-block align-top" alt="logo" />
@@ -30,7 +33,7 @@
           </li>
         </ul>
       </div>
-    {% block logout %}{% endblock %}
+      {% block button %}{% endblock %}
     </nav>
     {% block body %}{% endblock %}
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -40,4 +43,5 @@
     <!-- javascript -->
     {% block scripts %}{% endblock %}
   </body>
+
 </html>
