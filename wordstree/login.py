@@ -43,4 +43,4 @@ def logout():
     session.clear()
 
     # redirect user to login form
-    return redirect(url_for("login.login_as_get"))
+    return redirect(url_for("root.home"))

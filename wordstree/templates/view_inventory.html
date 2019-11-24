@@ -5,6 +5,10 @@
 <title>Home</title>
 {% endblock %}
 
+{% block button %}
+<a class="btn btn-success ml-auto mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
+{% endblock %}
+
 {% block body %}
 <div class="container-fluid">
   <div class="row">
