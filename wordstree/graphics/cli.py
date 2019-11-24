@@ -1,6 +1,8 @@
 import click
+from flask import current_app
+from flask.cli import with_appcontext
 
-from wordstree.graphics.loader import Loader, FileLoader
+from wordstree.graphics.loader import Loader, FileLoader, DBLoader
 from wordstree.graphics.render import Renderer
 
 
@@ -68,23 +70,35 @@ def validate_zoom(ctx, param, value):
 @click.option('-f', '--from', 'input_str', type=str, default='',
               help='Specifies where to read branches from; if left empty, a new tree will be generated. '
                    'Values can be (1) path to JSON file containing serialized array of branches, or (2)'
-                   '\'db:<table>\' where <table> is the SQLite table where branches should be read from.\n\0'
+                   '\'db:<tree-id>\' where <tree-id> is the id of the tree where branches should be read from.\n\0'
               )
 @click.option('-o', '--out', 'output_str', type=str, default='',
               help='Specifies where to save branches; if left empty (default), branches will not be stored. '
                    'See help on \'--from\' for help on other possible values.\n\0'
               )
-def render_tiles(zooms, depth, input_str, output_str):
+@with_appcontext
+def render_tiles(zooms, depth, input_str: str, output_str: str):
     """
     Renders tree of specified max-depth and at specified zoom level to file.
     """
 
-    loader = FileLoader()
-    input_str = input_str if input_str else None
-    loader.load_branches(file=input_str, max_depth=depth)
+    input_str, output_str = input_str.strip(), output_str.strip()
+
+    # load branches
+    if input_str.startswith('db:') or input_str == 'db':
+        tree_id = input_str[3:]
+        loader = DBLoader(current_app)
+
+        if tree_id:
+            loader.load_branches(tree_id=int(tree_id))
+        else:
+            loader.load_branches(max_depth=depth)
+    else:
+        loader = FileLoader()
+        input_str = input_str if input_str else None
+        loader.load_branches(file=input_str, max_depth=depth)
 
     ren = Renderer(max_layers=depth)
-
     # bound check on zoom levels
     zooms = parse_range_list(zooms, max=ren.max_zoom_level, min=0)
 
@@ -95,5 +109,22 @@ def render_tiles(zooms, depth, input_str, output_str):
         ren.render_tree(loader, zoom=level)
         click.echo('')
 
-    if output_str:
-        loader.save_branches(file=output_str)
+    # save branches
+    if output_str.startswith('db:') or output_str == 'db':
+        saver = DBLoader(current_app)
+        tree_id = output_str[3:]
+        tree_id = int(tree_id) if tree_id else None
+
+        saver.save_branches(
+            tree_id=tree_id,
+            width=ren.BASE_WIDTH, height=ren.BASE_WIDTH,
+            branches=loader.branches,
+            num_branches=loader.num_branches
+        )
+    elif output_str:
+        saver = FileLoader()
+        saver.save_branches(
+            file=output_str,
+            branches=loader.branches,
+            num_branches=loader.num_branches
+        )

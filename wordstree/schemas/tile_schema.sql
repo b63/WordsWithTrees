@@ -7,7 +7,8 @@ create table tiles (
     pos_y real not null,
     grid_width integer not null,
     grid_height integer not null,
-    tree_id not null references tree(tree_id) on delete cascade,
+    tree_id integer not null references tree(tree_id) on delete cascade,
     location text not null,
-    image_size text,
+    contains text default '' not null,
+    image_size text
 )
