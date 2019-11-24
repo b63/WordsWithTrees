@@ -11,15 +11,6 @@ def login_as_post():
     """ Login user with a form. """
 
     session.clear()
-    # ensure username was submitted
-    if not request.form.get("username"):
-        flash("You must provide a username")
-        return redirect(url_for('login.login_page'))
-
-    # ensure password was submitted
-    if not request.form.get("password"):
-        flash("You must provide a password")
-        return redirect(url_for('login.login_page'))
 
     # query database for username
     db = get_db()
@@ -28,7 +19,7 @@ def login_as_post():
 
     # ensure username exists and password is correct
     if user_data is None or not check_password_hash(user_data["hash_password"], request.form.get("password")):
-        flash("Invalid username and/or password")
+        flash("Invalid username and/or password.")
         return render_template("login.html")
 
     # remember which user has logged in
@@ -52,4 +43,4 @@ def logout():
     session.clear()
 
     # redirect user to login form
-    return redirect(url_for("login.login_page"))
+    return redirect(url_for("login.login_as_get"))
