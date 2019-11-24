@@ -218,8 +218,8 @@ class DBLoader(Loader):
 
             if tree_id is not None:
                 click.echo('Dropping existing tree with tree_id={} ...'.format(tree_id))
-                cur.execute('DELETE FROM tree WHERE tree_id = ?', [tree_id])
-                cur.execute('DELETE FROM branches WHERE tree_id = ?', [tree_id])
+                cur.execute(r'DELETE FROM branches WHERE "tree_id"=?', [tree_id])
+                cur.execute(r'DELETE FROM tree WHERE "tree_id"=?', [tree_id])
 
                 cur.execute('INSERT INTO tree (tree_id, num_branches, full_width, full_height) VALUES (?, ?, ?, ?)',
                             [tree_id, num_branches, full_width, full_height])
@@ -260,6 +260,7 @@ class DBLoader(Loader):
             branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle)
             if depth > layer:
                 layers.append(i)
+                layer = depth
             elif depth < layer:
                 raise Exception('branches not in order')
 
