@@ -3,7 +3,8 @@ import cairo
 from typing import Dict, Tuple
 import json
 
-from wordstree.graphics.util import Vec, degrees, JSONifiable
+from wordstree.graphics import HALF_PI
+from wordstree.graphics.util import Vec, degrees, JSONifiable, Rect, translate_point_along_line
 
 
 class Branch(JSONifiable):
@@ -19,6 +20,10 @@ class Branch(JSONifiable):
         self.__length = kwargs.get('length', Branch.DEFAULT_LENGTH)
         self.__width = kwargs.get('width', Branch.DEFAULT_WIDTH)
         self.__angle = kwargs.get('angle', Branch.DEFAULT_ANGLE)
+
+        x, y = self.__pos.x, self.__pos.y
+        top_left = translate_point_along_line(x, y, -self.__width/2, self.__angle + HALF_PI)
+        self.__rect = Rect(top_left, self.__length, self.__width, self.__angle)
 
     def hit_test(self, x, y):
         cos_theta = math.cos(self.angle)
@@ -43,15 +48,31 @@ class Branch(JSONifiable):
         ctx.save()
         pos, angle, width, length = self.pos, self.angle, self.width, self.length
 
+        # move origin to position of branch
         ctx.translate(pos.x, pos.y)
 
         # draw rectangle
+        ctx.save()
         ctx.rotate(angle)
         ctx.rectangle(0, -width / 2, length, width)
 
         r, g, b = get_branch_color(self)
         ctx.set_source_rgba(r, g, b, opacity)
         ctx.fill()
+        ctx.restore()
+
+        # draw label
+        label = '{:d}'.format(self.index)
+        ctx.set_source_rgba(1, 0, 0, opacity)
+        ctx.set_font_size(width*0.1)
+        extents = ctx.text_extents(label)
+
+        ctx.rotate(angle)
+        ctx.translate(length/2-extents.width/2, 0)
+        ctx.rotate(-angle)
+
+        ctx.show_text('{:d}'.format(self.index))
+
 
         # draw point
         # ctx.rotate(-angle)
@@ -60,6 +81,10 @@ class Branch(JSONifiable):
         # ctx.fill()
 
         ctx.restore()
+
+    @property
+    def rect(self):
+        return self.__rect
 
     @property
     def index(self):

@@ -2,6 +2,8 @@ import os
 from wordstree.graphics import *
 import json
 
+from cairo import Matrix
+
 
 class JSONifiable:
     def json_obj(self):
@@ -109,7 +111,8 @@ class Vec(JSONifiable):
 
 
 class Rect(object):
-    """Represents a rectangle in a plane in any orientation.
+    """
+    Represents a rectangle in a plane in any orientation.
     """
 
     def __init__(self, pos: Vec, dx: float, dy: float, angle: float = 0):
@@ -125,6 +128,16 @@ class Rect(object):
         self.__dx = dx
         self.__dy = dy
         self.__angle = angle
+        self.__matrix = Matrix.init_rotate(-angle)
+        self.__inv_matrix = Matrix.init_rotate(angle)
+
+    def to_rect_basis(self, x, y):
+        x1, y1 = self.__matrix.transform_point(x - self.pos.x, y - self.pos.y)
+        return Vec(x1, y1)
+
+    def from_rect_basis(self, x, y):
+        x1, y1 = self.__inv_matrix.transform_point(x, y)
+        return Vec(x1 + self.pos.x, y1 + self.pos.y)
 
     @property
     def points(self) -> Tuple[Vec, Vec, Vec, Vec]:
@@ -133,8 +146,14 @@ class Rect(object):
         :return: list of `Vec` objects [top-left, top-right, bottom-right, bottom-left] representing
          the vertices of the rectangle
         """
-        x, y, dx, dy = self.pos.x, self.pos.y, self.dx, self.dy
-        return self.pos, Vec(x + dx, y), Vec(x + dx, y + dy), Vec(x, y + dy)
+        dx, dy = self.dx, self.dy
+
+        top_left = self.pos
+        top_right = self.from_rect_basis(dx, 0)
+        bot_right = self.from_rect_basis(dx, dy)
+        bot_left = self.from_rect_basis(0, dy)
+
+        return top_left, top_right, bot_right, bot_left
 
     @property
     def angle(self) -> float:
@@ -151,6 +170,14 @@ class Rect(object):
     @property
     def dy(self):
         return self.__dy
+
+
+def translate_point_along_line(x, y, dl, angle: float = 0):
+    cos_theta, sin_theta = math.cos(angle), math.sin(angle)
+    x += dl * cos_theta
+    y += dl * sin_theta
+
+    return Vec(x, y)
 
 
 def project_point(angle: float, point: Vec):
