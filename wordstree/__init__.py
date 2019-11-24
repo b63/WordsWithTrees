@@ -20,13 +20,19 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
+    from .graphics import render
+    render.init_app(app)
+
     from . import home
     app.register_blueprint(home.bp)
 
     from . import login
     app.register_blueprint(login.bp)
 
-    from . import auth
-    app.register_blueprint(auth.bp)
+    from . import signup
+    app.register_blueprint(signup.bp)
+
+    from . import view_inventory
+    app.register_blueprint(view_inventory.bp)
 
     return app

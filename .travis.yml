@@ -2,10 +2,13 @@ language: python
 python:
   - "3.7"  # test with a recent version
 
+before_install:
+  - sudo apt-get -y install libcairo2
 # command to install dependencies
 install:
   - pip install flask
   - pip install pytest
+  - pip install pycairo
 
 script:
   - pytest tests

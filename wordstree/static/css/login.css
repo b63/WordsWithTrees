@@ -6,12 +6,13 @@ body {
   display: flex;
   -ms-flex-align: center;
   align-items: center;
+  padding-top: 40px;
   padding-bottom: 40px;
   background-color: #f7f7ea;
 }
 .form-signin {
   width: 100%;
-  max-width: 380px;
+  max-width: 330px;
   padding: 15px;
   margin: auto;
 }
@@ -46,7 +47,3 @@ body {
     background-color: #4C2C11;
     border-color: #4C2C11; /*set the color you want here*/
 }
-
-.form-control.is-valid:focus, .was-validated :valid.form-control{ border-color:inherit !important;
-    background-image: inherit !important;
-    box-shadow:inherit !important;}
