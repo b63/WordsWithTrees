@@ -17,14 +17,19 @@
     <form class="form-signin" action="{{ url_for('login.login_as_post') }}" method="post">
       <img src="../static/tree.png" alt="logo" width="250" height="250">
       <h1 class="h4 mb-3 font-weight-normal">Log in to Words With Trees</h1>
+
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-primary" role="alert">{{ message }}</div>
+      {% endfor %}
+
       <label for="inputEmail" class="sr-only">Username</label>
       <input name="username" type="text" value="{{ request.form['username'] }}" id="inputEmail" class="form-control" placeholder="Username" required autofocus>
       <label for="inputPassword" class="sr-only">Password</label>
       <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
       <button class="btn btn-lg btn-block btn-primary mb-2" type="submit">Log in</button>
-      {% for message in get_flashed_messages() %}
-      <div class="alert alert-primary" role="alert">{{ message }}</div>
-      {% endfor %}
+      <div class="mb-3 text-center">
+        <a href="{{url_for('signup.signup_as_get') }}">New to Words With Trees? Sign up now</a>
+      </div>
     </form>
   </body>
 
