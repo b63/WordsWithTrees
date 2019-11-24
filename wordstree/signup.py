@@ -44,12 +44,12 @@ def signup_as_post():
     db.commit()
     # store their id in session to log them in automatically
     cur = db.execute("SELECT id FROM users WHERE username=(?)",
-                         [request.form.get("username")])
+                     [request.form.get("username")])
     user_id = cur.fetchone()
-    
-    session['user_id'] = user_id['id']
 
-    return redirect(url_for('root.home'))
+    # automatically log in user and redirect to user's marketplace
+    session['user_id'] = user_id['id']
+    return redirect(url_for("view_inventory.view_inventory"))
 
 
 @bp.route('/signup', methods=['GET'])
