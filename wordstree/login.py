@@ -7,7 +7,7 @@ bp = Blueprint('login', __name__)
 
 
 @bp.route('/login', methods=['POST'])
-def login_form():
+def login_as_post():
     """ Login user with a form. """
 
     session.clear()
@@ -34,12 +34,12 @@ def login_form():
     # remember which user has logged in
     session["user_id"] = user_data["id"]
 
-    # redirect user to home page
-    return redirect(url_for("root.home"))
+    # redirect user to marketplace with user's inventory shown
+    return redirect(url_for("view_inventory.view_inventory"))
 
 
 @bp.route('/login', methods=['GET'])
-def login_page():
+def login_as_get():
     """ Redirect user to login form. """
     return render_template("login.html")
 
