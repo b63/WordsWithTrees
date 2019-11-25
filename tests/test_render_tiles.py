@@ -8,7 +8,7 @@ def test_render_zoom(app: Flask):
 
     result = runner.invoke(args=['render-tiles', '-z', '0-2', '-o', 'test_tree.json'])
     # check if branches were written to file
-    assert os.path.exists(os.path.join(app.root_path, 'cache/test_tree.json'))
+    assert os.path.exists(os.path.join(app.config['CACHE_DIR'], 'test_tree.json'))
 
 
 
