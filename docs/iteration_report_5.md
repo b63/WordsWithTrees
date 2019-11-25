@@ -1,51 +1,36 @@
-  # Iteration 5: Report
+# Iteration 5: Report
 
-## Responsibilites
-- Buy a Tree Branch: Ted, Bhavin, Nico
-Implement the basics of a buy and sell system for users. By the end of this iteration, the plan is to have some system for tracking the ownership of a branch.
+## Responsibilities
+ - Add branches to the database: Bhavin, Nico
+ - Render tree on the client-side by requesting pre-rendered tiles from the app
+ - Buy a Tree Branch: Ted, Bhavin, Nico
+Implement the basics of a buy and sell the system for users. By the end of this iteration, the plan is to have some system for tracking the ownership of a branch.
 - Write a Message on Tree Branch: Nico, Bhavin, Ted
-After laying the groundwork for tracking the ownership of branches, allows users to write custom messages on any of the branches they own.
-- Signup improvements: Ted
-Pre-populating non-password fields after getting invalid password message
-- Cairo tree generation: Bhavin, Nico
-Ted:
-- work on viewing inventory feature
+After laying the groundwork for tracking the ownership of branches, it allows users to write custom messages on any of the branches they own.
 
 ## Completed
-We completed polishing up the sign up and login feature from the previous iteration. We used bootstrap to clean up the UI,
-and make it more responsive. For example, on the signup page when there is some sort of error processing a request to sign up,
-the data fields other than the password are all pre-filled in the response. 
+Ted worked on adding a navigation bar for the website that allows the user to intuitively move through the site. He also worked on adding unit tests to the buying branches page.
+Bhavin worked on creating the system to generate all the tiles of the trees at different zoom levels and adding them to the disk or the database. He created a CLI to render tiles to save the position of the tiles and the branches contained in each tile. Additionally, he generated he worked on generating tests to confirm that the tiles and all of the information that they hold is accurate and being saved in the right place.
+Nico worked with Bhavin on generating the tiles at different zoom levels, but he focused on the view inventory and the buying screens. For the view inventory, he also created tests to check if branches owned by a user were being properly displayed. For the buying screen, he worked on displaying the branches that are available for purchase and also on filtering them based on the visibility of the branch and the price. 
 
-For the backend side of things, we also completed the tree generation at different zoom levels with Cairo. Right now the 
-flask application accepts a command line argument of `render-tree` with further options like zoom level and maximum tree 
-depth specified with `--zoom` and `--depth`. A PNG and SVG image will be saved to the `static/images` directory with the name
-`tree_z<zoom-level>.png|svg`. We weren't able to reach the stage where we can add branches to the database this week, but
-should get to and much more by next week with thanks giving break down the pipe. The only thing left to do is partition the images of the tree at different zoom levels into
-tiles and store those to disk along with information about the branches contained in each tile. In order to implement this,
-we needed a function that determines if two rectangles of arbritrary orientation intersect. We were able to implement that function
-this week. Once we have the branches in the database, we should be able to quickly get through the backlog of user stories about
-buying and selling that has been piling over the previous iterations. 
 
 ## Problems and Struggles
-We learned the importance of committing your work frequently _and_ pushing it to remote in case something bad happens. One of
-the team members accidentally deleted his local repository that had several commits that were not pushed to remote (`rm` does not
-seem to provide an undo, so all the code had to be re-rewritten). This mistake should not happen again, since `rm` has now been
-aliased to another trash management utility that has restore capabilties.
-
-
-## Plan for Iteration 5
- - Add branches to database: Bhavin, Nico
- - Render tree on the client side by requesting pre-rendered tiles from the app
- - Buy a Tree Branch: Ted, Bhavin, Nico
-Implement the basics of a buy and sell system for users. By the end of this iteration, the plan is to have some system for tracking the ownership of a branch.
-- Write a Message on Tree Branch: Nico, Bhavin, Ted
-After laying the groundwork for tracking the ownership of branches, allows users to write custom messages on any of the branches they own.
+This week things ran a lot smoother because we got together a lot more to develop the application. We met on Saturday, Sunday, and on Monday to develop the site and whenever we encountered a problem point, we were able to quickly figure it out because of the proximity between developers. Our main challenge right now is figuring out how to render the text on the front end of the site. We have the backend figured out and the marketplace is progressing really quickly so the main challenge that lies ahead is using JS to overlay text on the branches based on the information provided in the backend. 
 
 ## Plan for Iteration 6
-- Finish work on  the buy and sell system for branches: Ted, Bhavin, Nico
-- Work on making the website look visually attractive, and since it will be unlikely that we will have all the plans for previous Iterations completed, work on finishing those.
-Work on User Interaction: Put finishing touches and polish user interactions. By the end of this iteration, the plan is to have the user interactions with the application smooth and look nice.
+- Finishing all the tests for the backend tile rendering program (Bhavin)
+- Polishing the tests that we currently have for the marketplace, specifically, for the buy and sell pages (Ted)
+ - Completing the buying page with the ability to search for branches with a specific text and also allowing the user to purchase the branch. (Nico)
+- Writing a custom message on the tree branch once it has been bought (Ted, Nico)
+- Rendering the tree branches on the front-end with JS (Bhavin)
+- Adding branches 
+
 
 ## Plan for Iteration 7
-Continue making UI improvements, and polishing the website by restructuring the website, fixing any glitches or hiccups, and possibly using CSS/Javascript animations to make the user experience feel smooth since it is unlikely that it will as poslished as we would want it to be with just one week of work.
-Work on features/user stories that were not completed from the previous iteration.
+- Ensure that tree rendering on the front-end has low latency and is as responsive as possible
+- Make the website accessible and work on creating a more responsive website (Ted, Nico)
+- Finish work on  the buy and sell system for branches including periodically adding layers to the branches: Ted, Bhavin, Nico
+- Work on making the website look visually attractive.
+- Continue making UI improvements, and polishing the website by restructuring the website, fixing any glitches or hiccups, and possibly using CSS/Javascript animations to make the user experience feel smooth. Ted, Nico, Bhavin
+- Work on features/user stories that were not completed from the previous iteration.
+
