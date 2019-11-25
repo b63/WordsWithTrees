@@ -1,6 +1,7 @@
 from typing import Iterable, List
 import random
 import json
+import os
 
 import click
 from flask import current_app, Flask
@@ -18,8 +19,6 @@ BRANCH_ANGLE_DELTA = radians(10)
 BRANCH_ANGLES = (radians(20), radians(-20))
 MAX_BRANCH_LENGTH = 0.04
 MAX_CHILDREN = 2
-
-CACHE_DIR = 'wordstree/cache'
 
 
 def generate_root() -> Branch:
@@ -335,17 +334,19 @@ class FileLoader(Loader):
             # branches kwarg provided but no num_branches provided
             raise Exception('num_branches not provided')
 
-        stream = create_file(fname, relative=CACHE_DIR)
+        stream = create_file(fname, relative=current_app.config['CACHE_DIR'])
 
         with stream as file:
-            click.echo('Saving branches to {} ...'.format(file.name))
+            head, tail = os.path.split(file.name)
+            click.echo('Saving branches to {} ...'.format(tail))
             json.dump(branches[:num_branches], file, cls=BranchJSONEncoder)
 
     def __read_branches(self, fpath):
-        stream = open_file(fpath, relative=CACHE_DIR)
+        stream = open_file(fpath, relative=current_app.config['CACHE_DIR'])
 
         with stream as file:
-            click.echo('Reading branches from {} ...'.format(file.name))
+            head, tail = os.path.split(file.name)
+            click.echo('Reading branches from {} ...'.format(tail))
             branches = json.load(file, object_hook=_as_obj_hook)
 
         self.__branches = branches
