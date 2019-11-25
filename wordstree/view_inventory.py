@@ -10,7 +10,9 @@ def view_inventory():
     """ Display user's inventory. """
     db = get_db()
     user_id = session['user_id']
-    cur = db.execute('SELECT * FROM branches WHERE owner_id={}'.format(user_id))
+    cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id = b.id'
+                     ' WHERE owner_id=?', [user_id]
+                     )
     branches = cur.fetchall()
 
     return render_template("view_inventory.html", branches=branches)

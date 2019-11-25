@@ -1,264 +1,1 @@
-import random
-from typing import List
-import os
-
-import cairo
-from flask import current_app, g
-from flask.cli import with_appcontext
-import click
-
-from wordstree.graphics import *
-from wordstree.graphics.util import Vec, radians, Rect, rectangle_intersect
-from wordstree.graphics.branch import Branch
-
-BRANCH_LENGTH_SHRINK_FACTOR = 0.97
-BRANCH_WIDTH_SHRINK_FACTOR = 0.8
-BRANCH_LENGTH_DELTA = 0.01
-BRANCH_ANGLE_DELTA = radians(10)
-BRANCH_ANGLES = (radians(20), radians(-20))
-MAX_BRANCH_LENGTH = 0.04
-IMAGE_DIR = 'wordstree/static/images'
-
-
-def generate_root() -> Branch:
-    return Branch(
-        Vec(0.5, 0.99),
-        **{
-            'length': 0.3,
-            'width': 0.01
-        }
-    )
-
-
-def generate_branches(parent: Branch, layer: int) -> List[Branch]:
-    if layer == 0:
-        return [generate_root()]
-
-    if layer > 10:
-        num_branches = math.floor(max(0, random.gauss(0.5 - 0.5 * layer, 0.5)) + 0.5)
-    else:
-        num_branches = Renderer.MAX_CHILDREN
-
-    nangles = len(BRANCH_ANGLES)
-    branches = []
-
-    ppos, plength, pwidth, pangle = parent.pos, parent.length, parent.width, parent.angle
-
-    base_length = min(plength, MAX_BRANCH_LENGTH) * BRANCH_LENGTH_SHRINK_FACTOR
-
-    for i in range(num_branches):
-        width = pwidth * BRANCH_WIDTH_SHRINK_FACTOR
-        length = max(base_length + random.gauss(0, BRANCH_LENGTH_DELTA) / (layer + 1), 0)
-        angle = pangle + BRANCH_ANGLES[i % nangles] + random.gauss(0, BRANCH_ANGLE_DELTA)
-
-        x = ppos.x + math.cos(pangle) * plength
-        y = ppos.y + math.sin(pangle) * plength
-
-        branch = Branch(
-            Vec(x, y),
-            **{
-                'length': length,
-                'angle': angle,
-                'parent': parent,
-                'width': width,
-                'depth': layer
-            }
-        )
-        branches.append(branch)
-
-    return branches
-
-
-def create_dir(path):
-    """
-    Create directory `path` if the path does not already exist, creating parent directories as needed
-    :param path: path of directory to create
-    """
-    if not os.path.exists(path):
-        try:
-            os.mkdir(path)
-        except FileNotFoundError:
-            parent = os.path.split(path)[0]
-            # create parent directory
-            create_dir(parent)
-
-            os.mkdir(path)
-        except FileExistsError:
-            return
-
-
-def create_surface(zoom=0):
-    dir = os.path.join(IMAGE_DIR, 'svg')
-    create_dir(dir)
-
-    name = 'tree_z{}.svg'.format(zoom)
-    pfile = os.path.join(dir, name)
-    click.echo('saving svg to {} ...'.format(pfile))
-
-    file = open(pfile, mode='wb')
-    surface = cairo.SVGSurface(file, Renderer.WIDTH, Renderer.HEIGHT)
-    return surface
-
-
-def create_img_file(zoom=0):
-    dir = os.path.join(IMAGE_DIR, 'png')
-    create_dir(dir)
-
-    name = 'tree_z{}.png'.format(zoom)
-    pfile = os.path.join(dir, name)
-    file = open(pfile, mode='wb')
-    return file
-
-
-class Renderer:
-    WIDTH = 1024
-    HEIGHT = 1024
-    MAX_CHILDREN = 2
-
-    def __init__(self, max_layers=5):
-        self.layers = []
-        self.max_layers = max_layers
-
-        self.__branches = [None for i in range(2 ** max_layers + 1)]
-        self.__num_branches = 0
-
-        # self.zoom_levels = [i for i in range(0, max_layers)]
-        self.zoom_levels = [5, 6, 7, 8, 9, 10, 11]
-        self.grid_levels = [8, 16, 24, 40, 60]
-
-        self.create_branches()
-
-    def create_branches(self):
-        begin, end, layer = -1, 0, 0
-        max_length = len(self.branches)
-
-        # create root branch
-        self.branches[end] = generate_root()
-        begin += 1
-        end += 1
-        layer += 1
-
-        while layer < self.max_layers:
-            self.layers.append(begin)
-
-            layer_end = end
-            while begin < layer_end:
-                parent = self.branches[begin]
-                sub_branches = generate_branches(parent, layer)
-
-                i, size = 0, len(sub_branches)
-                while i < size and end < max_length:
-                    self.branches[end] = sub_branches[i]
-                    i += 1
-                    end += 1
-                begin += 1
-
-            if begin == end:
-                # no new branches were added
-                break
-
-            layer += 1
-
-        self.__num_branches = end
-
-    def setup_canvas(self, ctx):
-        ctx.scale(Renderer.WIDTH, Renderer.HEIGHT)
-
-        # draw white background
-        ctx.set_source_rgb(1, 1, 1)
-        ctx.rectangle(0, 0, 1, 1)
-        ctx.fill()
-
-        ctx.set_source_rgb(1, 0, 0)
-        ctx.rectangle(0, 0, 0.01, 0.1)
-        ctx.fill()
-        ctx.set_source_rgb(0, 1, 0)
-        ctx.rectangle(0, 0, 0.1, 0.01)
-        ctx.fill()
-
-        ctx.set_source_rgb(1, 0, 1)
-        ctx.rectangle(0, 0, 1, 1)
-        ctx.set_line_width(0.01)
-        ctx.stroke()
-
-        ratio = 0.9
-        ctx.translate(0.5, 1)
-        ctx.scale(ratio, ratio)
-        ctx.translate(-0.5, -1)
-
-        # draw boundary
-        ctx.set_source_rgb(0, 0, 0)
-        ctx.rectangle(0, 0, 1, 1)
-        ctx.set_line_width(0.01)
-        ctx.stroke()
-
-    def get_opacity(self, zoom: int, layer: int) -> float:
-        diff = layer - zoom
-        if diff <= 0:
-            return 1.0
-        elif diff == 1:
-            return 0.5
-        elif diff == 2:
-            return 0.15
-        elif diff == 3:
-            return 0.05
-        else:
-            return 0
-
-    def render_tree(self, zoom=0):
-        surface = create_surface(zoom=zoom)
-
-        ctx = cairo.Context(surface)
-        self.setup_canvas(ctx)
-
-        i, layeri = self.tree_size - 1, len(self.layers) - 1
-        next_layer = self.layers[layeri]
-
-        while i >= 0:
-            opacity = self.get_opacity(zoom, layeri)
-            if opacity > 0.0:
-                self.branches[i].draw(ctx, opacity=opacity)
-
-            i -= 1
-            if i == next_layer:
-                print('finished drawing layer {:d}...'.format(layeri))
-                layeri -= 1
-                next_layer = self.layers[layeri]
-
-        png = create_img_file(zoom)
-        click.echo('Saving png to {} ...'.format(png.name))
-        surface.write_to_png(png)
-
-    @property
-    def branches(self) -> List[Branch]:
-        return self.__branches
-
-    @property
-    def tree_size(self) -> int:
-        return self.__num_branches
-
-
-def init_app(app):
-    app.cli.add_command(render_tree)
-
-
-@click.command('render-tree')
-@click.option('--zoom', default=5,
-              help='\'zoom\' level to render the tree at, higher number means more layers will be visible, defaults '
-                   'to 5 '
-              )
-@click.option('--depth', default=14,
-              help='maximum depth of the tree, defaults to 14')
-def render_tree(zoom, depth):
-    """
-    Renders tree of specified max-depth and at specified zoom level to file.
-    """
-    click.echo('Rendering tree with max depth {} at zoom level {}...'.format(depth, zoom))
-
-    renderer = Renderer(max_layers=depth)
-    renderer.render_tree(zoom=zoom)
-
-
-if __name__ == "__main__":
-    renderer = Renderer(max_layers=16)
-    renderer.render_tree(zoom=7)
+from typing import Listimport osimport jsonimport mathimport cairoimport clickfrom wordstree.graphics.branch import Branchfrom wordstree.graphics.util import Vec, radians, create_dir, Rect, rectangle_intersectfrom wordstree.graphics.loader import Loader, FileLoader, BranchJSONEncoderIMAGE_DIR = 'wordstree/cache/images'CACHE_DIR = 'wordstree/cache'def create_surface(zoom=0):    # name = 'tree_z{}.svg'.format(zoom)    # file = create_img_file(name, path='svg/')    # click.echo('saving svg to {} ...'.format(file.name))    surface = cairo.RecordingSurface(        cairo.Content.COLOR_ALPHA,        cairo.Rectangle(0, 0, Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT)    )    return surfacedef create_img_file(name, path=''):    dir = os.path.join(IMAGE_DIR, path)    create_dir(dir)    pfile = os.path.join(dir, name)    file = open(pfile, mode='wb')    return filedef create_cache_file(name, path=''):    dir = os.path.join(CACHE_DIR, path)    create_dir(dir)    pfile = os.path.join(dir, name)    file = open(pfile, mode='w')    return filedef __draw_point(ctx, x, y):    # utility function for drawing a point, helpful for debugging    ctx.arc(x, y, 0.0001, 0, 2 * math.pi)    ctx.fill()class Renderer:    BASE_WIDTH = 1024    BASE_HEIGHT = 1024    def __init__(self, max_layers=5):        # self.zoom_levels = [i for i in range(0, max_layers)]        self.zoom_levels = [3, 4, 5, 6, 9, 10, 11]        self.grid_levels = [4, 12, 21, 30, 40, 60, 80]    def setup_canvas(self, ctx):        ctx.scale(Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT)        # draw white background        ctx.set_source_rgb(1, 1, 1)        ctx.rectangle(0, 0, 1, 1)        ctx.fill()    def get_opacity(self, zoom: int, layer: int) -> float:        diff = layer - self.zoom_levels[zoom]        if diff < 0:            return 1.0        elif diff == 0:            return 0.5        elif diff == 1:            return 0.15        elif diff == 2:            return 0.05        elif diff == 3:            return 0.01        else:            return 0    def render_tree(self, loader: Loader, zoom=0):        layers = loader.layers        branches = loader.branches        num_branches = loader.num_branches        surface = create_surface(zoom=zoom)        ctx = cairo.Context(surface)        self.setup_canvas(ctx)        i, layeri = num_branches - 1, len(layers) - 1        next_layer = layers[layeri]        while i >= 0:            opacity = self.get_opacity(zoom, layeri)            if opacity > 0.0:                branches[i].draw(ctx, opacity=opacity)            i -= 1            if i == next_layer:                print('finished drawing layer {:d}...'.format(layeri))                layeri -= 1                next_layer = layers[layeri]        self._save_full_tree(surface, zoom, loader)        self._cache_tiles(surface, zoom, loader)    def _save_full_tree(self, surface: cairo.Surface, zoom: int, loader):        svg_file = create_img_file('tree_z{}.svg'.format(zoom), path='svg')        click.echo('Saving svg of tree to {} ...'.format(svg_file.name))        pat = cairo.SurfacePattern(surface)        img = cairo.SVGSurface(svg_file, Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT)        ctx = cairo.Context(img)        ctx.set_source(pat)        ctx.paint()        # font options        ctx.set_font_size(0.001)        # draw grid        ctx.scale(Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT)        ctx.set_source_rgb(1, 0, 0)        ctx.set_line_width(0.0001)        grid = self.grid_levels[zoom]        dx = 1 / grid        draw_label = grid <= 40        for i in range(grid + 1):            x = i * dx            # horizontal line            ctx.new_path()            ctx.move_to(0, x)            ctx.line_to(1, x)            ctx.stroke()            # vertical line            ctx.new_path()            ctx.move_to(x, 0)            ctx.line_to(x, 1)            ctx.stroke()            if not draw_label:                continue            for j in range(grid + 1):                # draw label                y = j * dx + dx                ctx.save()                ctx.translate(x + 0.003, y - 0.003)                ctx.show_text('({}, {}):({:.2f}, {:.2f})'.format(i, j, x, y))                ctx.stroke()                ctx.restore()    def _cache_tiles(self, surface: cairo.Surface, zoom: int, loader: Loader):        pat = cairo.SurfacePattern(surface)        grid = self.grid_levels[zoom]        # dimension of each tile        dimx, dimy = Renderer.BASE_WIDTH, Renderer.BASE_HEIGHT        # dimension of each tile in the original image        grid_dx = Renderer.BASE_WIDTH / grid        grid_dy = Renderer.BASE_HEIGHT / grid        # dimension of each tile in the original image        norm_grid_dx = 1 / grid        norm_grid_dy = 1 / grid        scale = grid_dx / dimx        imgdir = 'png/zoom_{}'.format(zoom)        jsondir = 'json/zoom_{}'.format(zoom)        for i in range(grid):            x = i * grid_dx            for j in range(grid):                tile = cairo.ImageSurface(cairo.Format.RGB24, dimx, dimy)                ctx = cairo.Context(tile)                y = j * grid_dy                mat = cairo.Matrix(xx=scale, yy=scale, x0=x, y0=y)                pat.set_matrix(mat)                ctx.set_source(pat)                ctx.paint()                self.stop = False                if i == 12 and j == 19:                    self.stop = True                    print(i, j)                rect = Rect(Vec(i * norm_grid_dx, j * norm_grid_dy), norm_grid_dx, norm_grid_dy)                contained_branches = self._get_contained_branches(loader.branches, loader.num_branches, rect, zoom)                file_name = 'z{}_{:.0f}x{:.0f}@{}_{}'.format(zoom, grid_dx, grid_dy, i, j)                branch_file = create_cache_file(file_name + '.json', path=jsondir)                click.echo('Saving tile branches at ({:.2f}, {:.2f}) to {}'.format(x, y, branch_file.name))                json.dump(contained_branches, branch_file, cls=BranchJSONEncoder)                img_file = create_img_file(file_name + '.png', path=imgdir)                click.echo('Saving tile at ({:.2f}, {:.2f}) to {}'.format(x, y, img_file.name))                tile.write_to_png(img_file)    def _get_contained_branches(self, branches: List[Branch], num_branches: int, rect: Rect, zoom: int):        hits = []        visible = self.zoom_levels[zoom]        for i in range(num_branches):            branch = branches[i]            if branch.depth > visible:                continue            if rectangle_intersect(rect, branch.rect):                hits.append(branch)        return hits    @property    def max_zoom_level(self):        return len(self.zoom_levels) - 1if __name__ == "__main__":    renderer = Renderer(max_layers=16)    renderer.render_tree(zoom=7)

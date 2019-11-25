@@ -1,6 +1,8 @@
 import os
 from flask import Flask
 
+DATABASE_FILE = 'wwt.db'
+
 
 # application factory
 def create_app(test_config=None):
@@ -9,7 +11,7 @@ def create_app(test_config=None):
 
     # Load default config and override config from an environment variable
     app.config.from_mapping(
-        DATABASE=os.path.join(app.root_path, 'wwt.db'),
+        DATABASE=os.path.join(app.root_path, DATABASE_FILE),
         DEBUG=True,
         SECRET_KEY='development key',
     )
@@ -20,8 +22,8 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
-    from .graphics import render
-    render.init_app(app)
+    from .graphics import cli as graphics_cli
+    graphics_cli.init_app(app)
 
     from . import home
     app.register_blueprint(home.bp)

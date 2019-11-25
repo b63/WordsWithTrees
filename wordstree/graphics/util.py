@@ -1,5 +1,68 @@
-from typing import Tuple
+import os
 from wordstree.graphics import *
+import json
+
+from cairo import Matrix
+
+
+class JSONifiable:
+    def json_obj(self):
+        pass
+
+
+def create_dir(path):
+    """
+    Create directory `path` if the path does not already exist, creating parent directories as needed
+    :param path: path of directory to create
+    """
+    if not os.path.exists(path):
+        try:
+            os.mkdir(path)
+        except FileNotFoundError:
+            parent = os.path.split(path)[0]
+            # create parent directory
+            create_dir(parent)
+
+            os.mkdir(path)
+        except FileExistsError:
+            return
+
+
+def create_file(fpath, relative=''):
+    """
+    Returns a file object pointing to file located at `fpath` that is open for writing. Parent directories are
+    created as needed.
+    Note: Callee is responsible for closing the file.
+
+    :param fpath: path to file
+    :param relative: if `fpath` is a not an absolute path, what the path is relative to
+    :return: file object open for writing
+    """
+    if not os.path.isabs(fpath):
+        fpath = os.path.join(relative, fpath)
+
+    if os.path.exists(fpath):
+        if os.path.isdir(fpath):
+            raise IsADirectoryError(r"'{}' is a directory".format(fpath.name))
+        file = open(fpath, mode='w')
+    else:
+        dir, fname = os.path.split(fpath)
+        create_dir(dir)
+
+        file = open(fpath, mode='w')
+
+    return file
+
+
+def open_file(fpath, relative=''):
+    if not os.path.isabs(fpath):
+        fpath = os.path.join(relative, fpath)
+
+    if not os.path.exists(fpath):
+        raise FileNotFoundError('"{}" does not exist'.format(fpath))
+
+    file = open(fpath, mode='r')
+    return file
 
 
 def degrees(rad: float) -> float:
@@ -19,7 +82,7 @@ def radians(deg: float) -> float:
     return deg / DEG_RAD
 
 
-class Vec:
+class Vec(JSONifiable):
     """Represents vector in 2D. Offers overloaded `__str__` method for easier printing.
     """
 
@@ -38,11 +101,18 @@ class Vec:
     def __str__(self):
         return '({:.2f}, {:.2f})'.format(self.__x, self.__y)
 
-    __repr__ = __str__
+    def json_obj(self):
+        dic = {'x': self.x, 'y': self.y}
+        return dic
+
+    def __repr__(self):
+        dic = self.json_obj()
+        return json.dumps(dic)
 
 
 class Rect(object):
-    """Represents a rectangle in a plane in any orientation.
+    """
+    Represents a rectangle in a plane in any orientation.
     """
 
     def __init__(self, pos: Vec, dx: float, dy: float, angle: float = 0):
@@ -58,6 +128,16 @@ class Rect(object):
         self.__dx = dx
         self.__dy = dy
         self.__angle = angle
+        self.__matrix = Matrix.init_rotate(-angle)
+        self.__inv_matrix = Matrix.init_rotate(angle)
+
+    def to_rect_basis(self, x, y):
+        x1, y1 = self.__matrix.transform_point(x - self.pos.x, y - self.pos.y)
+        return Vec(x1, y1)
+
+    def from_rect_basis(self, x, y):
+        x1, y1 = self.__inv_matrix.transform_point(x, y)
+        return Vec(x1 + self.pos.x, y1 + self.pos.y)
 
     @property
     def points(self) -> Tuple[Vec, Vec, Vec, Vec]:
@@ -66,8 +146,14 @@ class Rect(object):
         :return: list of `Vec` objects [top-left, top-right, bottom-right, bottom-left] representing
          the vertices of the rectangle
         """
-        x, y, dx, dy = self.pos.x, self.pos.y, self.dx, self.dy
-        return self.pos, Vec(x + dx, y), Vec(x + dx, y + dy), Vec(x, y + dy)
+        dx, dy = self.dx, self.dy
+
+        top_left = self.pos
+        top_right = self.from_rect_basis(dx, 0)
+        bot_right = self.from_rect_basis(dx, dy)
+        bot_left = self.from_rect_basis(0, dy)
+
+        return top_left, top_right, bot_right, bot_left
 
     @property
     def angle(self) -> float:
@@ -84,6 +170,14 @@ class Rect(object):
     @property
     def dy(self):
         return self.__dy
+
+
+def translate_point_along_line(x, y, dl, angle: float = 0):
+    cos_theta, sin_theta = math.cos(angle), math.sin(angle)
+    x += dl * cos_theta
+    y += dl * sin_theta
+
+    return Vec(x, y)
 
 
 def project_point(angle: float, point: Vec):
@@ -131,6 +225,7 @@ def rectangle_intersect(rect1: Rect, rect2: Rect):
     :param rect2:`Rect` object representing one of the rectangles
     :return: whether the two rectangles intersect or not
     """
+
     def check_projection_overlap(angle: float, rect1: Rect, rect2: Rect) -> bool:
         left1, right1 = project_rectangle(angle, rect1)
         left2, right2 = project_rectangle(angle, rect2)
@@ -162,4 +257,3 @@ def rectangle_intersect(rect1: Rect, rect2: Rect):
 
     # rectangles intersect
     return True
-
