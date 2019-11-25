@@ -15,20 +15,26 @@ def init_db():
     """Initializes the database."""
     db = get_db()
     dir = os.path.join(current_app.root_path, 'schemas')
+    test_dir = os.path.join(current_app.root_path, '../tests/schemas')
 
-    # sort in case some need to run before others
-    files = sorted(list(
-        filter(
-            lambda p: p.endswith('.sql') and os.path.isfile(os.path.join(dir, p)),
-            os.listdir(dir)
-        )
-    ))
+    def run_schemas(_dir):
+        # sort in case some need to run before others
+        files = sorted(list(
+            filter(
+                lambda p: p.endswith('.sql') and os.path.isfile(os.path.join(_dir, p)),
+                os.listdir(_dir)
+            )
+        ))
 
-    click.echo('Reading schemas from {} ...'.format(dir))
-    for file in files:
-        click.echo('    reading {}'.format(file))
-        with open(os.path.join(dir, file), mode='r') as f:
-            db.cursor().executescript(f.read())
+        click.echo('Reading schemas from {} ...'.format(_dir))
+        for file in files:
+            click.echo('    reading {}'.format(file))
+            with open(os.path.join(_dir, file), mode='r') as f:
+                db.cursor().executescript(f.read())
+
+    run_schemas(dir)
+    if current_app.config.get('TESTING', False) and os.path.exists(test_dir):
+        run_schemas(test_dir)
 
 
 @click.command('initdb')
