@@ -19,6 +19,7 @@ create table branches_ownership (
     "branch_id" integer not null references branches("id") on delete set null,
     "owner_id" integer not null references users("id") on delete set null,
     "text" text,
+    "price" integer default 0,
     "available_for_purchase" boolean default 0 check ("available_for_purchase" in (0,1))
 )
 
