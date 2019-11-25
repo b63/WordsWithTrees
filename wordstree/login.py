@@ -34,7 +34,7 @@ def login_as_get():
     """ Redirect user to login form. """
     return render_template("login.html")
 
-
+#
 @bp.route("/logout")
 def logout():
     """Log user out."""
