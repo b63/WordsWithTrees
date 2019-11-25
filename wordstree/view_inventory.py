@@ -5,14 +5,15 @@ from flask import Blueprint, Flask, request, g, redirect, url_for, render_templa
 bp = Blueprint('view_inventory', __name__)
 
 
-@bp.route('/view')
+@bp.route('/inventory')
 def view_inventory():
     """ Display user's inventory. """
-
-
     db = get_db()
-
-    cur = db.execute('SELECT * FROM branches')
+    user_id = session['user_id']
+    cur = db.execute('SELECT * FROM branches WHERE owner_id={}'.format(user_id))
     branches = cur.fetchall()
 
     return render_template("view_inventory.html", branches=branches)
+
+
+

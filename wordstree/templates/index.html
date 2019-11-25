@@ -1,26 +1,17 @@
-<!doctype html>
-<html lang="en">
+{% extends "layout.html" %}
 
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<title>Words With Trees</title>
+{% endblock %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <!-- <link rel="stylesheet" href="../static/css/index.css"> -->
-  </head>
-  <title>Index</title>
+{% block body %}
+<form class="form text-center" action="{{ url_for('root.home') }}" method="post">
+  <img src="../static/tree.png" alt="logo" width="250" height="250">
+  <h1 class="h2 mb-3 font-weight-normal">Words With Trees</h1>
 
-  <body class="text-center">
-    <form class="form" action="{{ url_for('root.home') }}" method="post">
-      <img src="../static/tree.png" alt="" width="250" height="250">
-      <h1 class="h2 mb-3 font-weight-normal">Words With Trees</h1>
-
-      <button class="btn btn-lg btn-block btn-primary" type="submit" name="sign up" value="sign up">Sign Up</button>
-      <button class="btn btn-lg btn-block btn-outline-primary" type="submit" name="log in" value="log in">Log In</button>
-      <p class="mt-5 mb-3 text-muted">&copy; CS253 Fall-2019</p>
-    </form>
-  </body>
-</html>
+  <a class="btn btn-lg btn-block btn-primary" href="{{ url_for('signup.signup_as_get') }}" role="button">Sign Up</a>
+  <a class="btn btn-lg btn-block btn-outline-primary" href="{{ url_for('login.login_as_get') }}" role="button">Log In</a>
+  <p class="mt-5 mb-3 text-muted">&copy; CS253 Fall-2019</p>
+</form>
+{% endblock %}

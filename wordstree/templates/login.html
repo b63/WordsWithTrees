@@ -1,31 +1,47 @@
-<!doctype html>
-<html lang="en">
+{% extends "layout.html" %}
 
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<title>Log in</title>
+{% endblock %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    <!-- <link rel="stylesheet" href="../static/css/login.css"> -->
-  </head>
-  <title>Log In</title>
+{% block button %}
+<a class="btn btn-success ml-auto mr-1" href="{{ url_for('signup.signup_as_get') }}">Sign Up</a>
+{% endblock %}
 
-  <body class="text-center">
-    <form class="form-signin" action="{{ url_for('login.login_form') }}" method="post">
-      <img src="../static/tree.png" alt="" width="250" height="250">
-      <h1 class="h4 mb-3 font-weight-normal">Log in to Words With Trees</h1>
-      <label for="inputEmail" class="sr-only">Username</label>
-      <input name="username" type="text" value="{{ request.form['username'] }}" id="inputEmail" class="form-control" placeholder="Username" required autofocus>
-      <label for="inputPassword" class="sr-only">Password</label>
-      <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-      <button class="btn btn-lg btn-block btn-primary mb-2" type="submit">Log in</button>
-      {% for message in get_flashed_messages() %}
-      <div class="alert alert-primary" role="alert">{{ message }}</div>
-      {% endfor %}
-    </form>
-  </body>
+{% block body %}
+<form class="form-signin needs-validation" novalidate="" action="{{ url_for('login.login_as_post') }}" method="post">
+  <div class="text-center">
+    <img src="../static/tree.png" alt="logo" width="250" height="250">
+    <h1 class="h4 mb-3 font-weight-normal">Words With Trees</h1>
+  </div>
 
-</html>
+  {% for message in get_flashed_messages() %}
+  <div class="alert alert-primary" role="alert">{{ message }}</div>
+  {% endfor %}
+
+  <div class="mb-3">
+    <label for="username">Username</label>
+    <input name="username" type="text" value="{{ request.form['username'] }}" class="form-control" required autofocus>
+    <div class="invalid-feedback">
+      You must provide a username.
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="password">Password</label>
+    <input name="password" type="password" value="{{ request.form['password'] }}" class="form-control" required>
+    <div class="invalid-feedback">
+      You must provide a password.
+    </div>
+  </div>
+  <button class="btn btn-lg btn-block btn-primary mb-2" type="submit">Log in</button>
+  <div class="mb-3 text-center">
+    <a href="{{url_for('signup.signup_as_get') }}">New to Words With Trees? Sign up now</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for("static", filename="js/form-validation.js") }}"> </script>
+{% endblock %}
