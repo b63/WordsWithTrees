@@ -39,4 +39,7 @@ def create_app(test_config=None):
     from . import view_inventory
     app.register_blueprint(view_inventory.bp)
 
+    from . import buy_branches
+    app.register_blueprint(buy_branches.bp)
+
     return app
