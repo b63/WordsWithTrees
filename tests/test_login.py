@@ -19,8 +19,8 @@ def register_user(name, username, password):
     assert check_password_hash(user_content['hash_password'], password)
 
 
-'''testing logging in with predetermined credentials'''
 def test_login(client, app):
+    """testing logging in with predetermined credentials"""
     with app.app_context():
         # testing if we are correctly getting the login page
         assert client.get('/login').status_code == 200

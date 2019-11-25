@@ -1,8 +1,9 @@
 drop table if exists branches;
+drop table if exists branches_ownership;
 
 create table branches (
     "id" integer primary key autoincrement,
-    "index" integer check ("index" >= 0),
+    ind integer check (ind >= 0),
     "depth" integer not null,
     "length" real not null,
     "width" real not null,
@@ -10,5 +11,14 @@ create table branches (
     "pos_x" real not null,
     "pos_y" real not null,
     "tree_id" integer not null references tree(tree_id) on delete cascade,
-    unique ("index", "tree_id")
+    unique (ind, "tree_id")
 );
+
+create table branches_ownership (
+    "id" integer primary key autoincrement,
+    "branch_id" integer not null references branches("id") on delete set null,
+    "owner_id" integer not null references users("id") on delete set null,
+    "text" text,
+    "available_for_purchase" boolean default 0 check ("available_for_purchase" in (0,1))
+)
+

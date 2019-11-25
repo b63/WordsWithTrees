@@ -169,7 +169,7 @@ def _as_obj_hook(dic):
 
     pos_dict = dic['pos']
     pos = Vec(pos_dict['x'], pos_dict['y'])
-    branch = Branch(dic['index'], pos,
+    branch = Branch(dic['ind'], pos,
                     depth=dic['depth'],
                     length=dic['length'],
                     width=dic['width'],
@@ -244,7 +244,7 @@ class DBLoader(Loader):
 
             click.echo('Reading branches with tree_id={} ...'.format(tree_id))
 
-            cur.execute('SELECT * FROM branches WHERE tree_id=? ORDER BY "index" ASC', [tree_id])
+            cur.execute('SELECT * FROM branches WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
             results = cur.fetchall()
 
         num_branches = len(results)
@@ -284,7 +284,7 @@ class DBLoader(Loader):
         click.echo('Adding branches to tree with tree_id={} ...'.format(tree_id))
         for i in range(size):
             branch = branches[i]
-            cur.execute('INSERT INTO branches ("index", depth, length, width, angle, pos_x, pos_y, tree_id)'
+            cur.execute('INSERT INTO branches ("ind", depth, length, width, angle, pos_x, pos_y, tree_id)'
                         ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                         [i, branch.depth, branch.length, branch.width, branch.angle,
                          branch.pos.x, branch.pos.y, tree_id])
