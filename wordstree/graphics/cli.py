@@ -82,7 +82,7 @@ def render_tiles(zooms, depth, input_str: str, output_str: str):
     Renders tree of specified max-depth and at specified zoom level to file.
     """
 
-    click.echo('cache directory {} ...'.format(current_app.config['CACHE_DIR']))
+    click.echo('Cache directory: {}'.format(current_app.config['CACHE_DIR']))
 
     input_str, output_str = input_str.strip(), output_str.strip()
 
@@ -106,9 +106,12 @@ def render_tiles(zooms, depth, input_str: str, output_str: str):
 
     click.echo('Rendering tree with max depth {} at zoom level(s) {} ...'.format(depth, str(zooms).strip('[]')))
 
-    for level in zooms:
-        click.echo('\n=====\nzoom level {}'.format(level))
+    num_zooms = len(zooms)
+    for i in range(num_zooms):
+        level = zooms[i]
+        click.echo('\nZoom level: {}'.format(level))
         ren.render_tree(loader, zoom=level)
+    click.echo()
 
     # save branches
     if output_str.startswith('db:') or output_str == 'db':

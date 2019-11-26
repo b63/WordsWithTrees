@@ -112,12 +112,13 @@ def create_branches(branches: List, max_layers=13):
 
 
 def generate_tree(max_depth=10, cls=None) -> Tuple[List, List[int], int]:
-    click.echo('Generating new tree max_depth={} ...'.format(cls, max_depth))
+    click.echo('Generating new tree max_depth={} ...'.format(max_depth))
 
     branches = [None for i in range(2 ** max_depth + 1)]
     layers, length = create_branches(branches, max_layers=max_depth)
 
-    print(layers)
+    click.echo('  layers: {}'.format(layers))
+    click.echo('  number of branches: {}'.format(length))
     return branches, layers, length
 
 
@@ -216,7 +217,7 @@ class DBLoader(Loader):
             cur = db.cursor()
 
             if tree_id is not None:
-                click.echo('Dropping existing tree with tree_id={} ...'.format(tree_id))
+                click.echo('Dropping existing entry with tree_id={} ...'.format(tree_id))
                 cur.execute(r'DELETE FROM branches WHERE "tree_id"=?', [tree_id])
                 cur.execute(r'DELETE FROM tree WHERE "tree_id"=?', [tree_id])
 
@@ -228,7 +229,7 @@ class DBLoader(Loader):
 
             cur.execute('SELECT last_insert_rowid()')
             rowid = cur.fetchone()[0]
-            click.echo('Created new tree with tree_id={} ...'.format(rowid))
+            click.echo('Created new entry with tree_id={}'.format(rowid))
 
             self.__add_all_branches(cur, rowid, branches=branches, num_branches=num_branches)
             db.commit()
@@ -263,9 +264,7 @@ class DBLoader(Loader):
             elif depth < layer:
                 raise Exception('branches not in order')
 
-        click.echo('Read {} branches with tree_id={}, layers {} ...'
-                   .format(num_branches, tree_id, str(layers).strip('[]'))
-                   )
+        click.echo('  branches read: {}\n  layers: {}'.format(num_branches, str(layers).strip('[]')))
 
         self.__branches = branches
         self.__num_branches = num_branches
@@ -280,15 +279,13 @@ class DBLoader(Loader):
             branches = self.branches
             size = self.num_branches
 
-        click.echo('Adding branches to tree with tree_id={} ...'.format(tree_id))
+        click.echo('  adding {} branches ...'.format(size))
         for i in range(size):
             branch = branches[i]
             cur.execute('INSERT INTO branches ("ind", depth, length, width, angle, pos_x, pos_y, tree_id)'
                         ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                         [i, branch.depth, branch.length, branch.width, branch.angle,
                          branch.pos.x, branch.pos.y, tree_id])
-
-        click.echo('Done adding {} branches with tree_id={} ...'.format(size, tree_id))
 
     @property
     def app(self):
