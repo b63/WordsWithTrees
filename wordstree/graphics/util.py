@@ -102,6 +102,10 @@ class Vec(JSONifiable):
         return '({:.2f}, {:.2f})'.format(self.__x, self.__y)
 
     def json_obj(self):
+        """
+        Returns serializable object for encoding to JSON.
+        :return: dictionary representing this object
+        """
         dic = {'x': self.x, 'y': self.y}
         return dic
 
@@ -131,11 +135,19 @@ class Rect(object):
         self.__matrix = Matrix.init_rotate(-angle)
         self.__inv_matrix = Matrix.init_rotate(angle)
 
-    def to_rect_basis(self, x, y):
+    def _to_rect_basis(self, x, y):
+        """
+        Returns the location of the point described by (x,y) in standard coordinates in 'rectangle' coordinates, where
+        standard basis vectors are rotated by `self.angle` radians, and the origin shifted to `self.pos`
+        (top-left corner of rectangle).
+        """
         x1, y1 = self.__matrix.transform_point(x - self.pos.x, y - self.pos.y)
         return Vec(x1, y1)
 
-    def from_rect_basis(self, x, y):
+    def _from_rect_basis(self, x, y):
+        """
+        Inverse of `_to_rect_basis()`.
+        """
         x1, y1 = self.__inv_matrix.transform_point(x, y)
         return Vec(x1 + self.pos.x, y1 + self.pos.y)
 
@@ -149,9 +161,9 @@ class Rect(object):
         dx, dy = self.dx, self.dy
 
         top_left = self.pos
-        top_right = self.from_rect_basis(dx, 0)
-        bot_right = self.from_rect_basis(dx, dy)
-        bot_left = self.from_rect_basis(0, dy)
+        top_right = self._from_rect_basis(dx, 0)
+        bot_right = self._from_rect_basis(dx, dy)
+        bot_left = self._from_rect_basis(0, dy)
 
         return top_left, top_right, bot_right, bot_left
 
@@ -173,6 +185,15 @@ class Rect(object):
 
 
 def translate_point_along_line(x, y, dl, angle: float = 0):
+    """
+    Returns the point reached after translating (x,y) by `dl` at an angle of `angle` radians.
+
+    :param x: x-coordinate of point
+    :param y: y-coordinate of point
+    :param dl: distance to translate the point by
+    :param angle:  angle in the direction to translate the point
+    :return: a `Vec` object representing the point reached after translation
+    """
     cos_theta, sin_theta = math.cos(angle), math.sin(angle)
     x += dl * cos_theta
     y += dl * sin_theta

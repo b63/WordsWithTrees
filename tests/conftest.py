@@ -16,7 +16,8 @@ def app():
         'TESTING': True,
         'DATABASE': db_path,
         'CACHE_DIR': cache_path,
-        'IMAGE_DIR': os.path.join(cache_path, 'images')
+        'IMAGE_DIR': os.path.join(cache_path, 'images'),
+        'TEST_TREE_ID': 1938
     })
 
     with app.app_context():

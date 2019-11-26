@@ -112,13 +112,13 @@ def create_branches(branches: List, max_layers=13):
 
 
 def generate_tree(max_depth=10, cls=None) -> Tuple[List, List[int], int]:
-    click.echo('Generating new tree max_depth={} ...'.format(max_depth))
+    print('Generating new tree max_depth={} ...'.format(max_depth))
 
     branches = [None for i in range(2 ** max_depth + 1)]
     layers, length = create_branches(branches, max_layers=max_depth)
 
-    click.echo('  layers: {}'.format(layers))
-    click.echo('  number of branches: {}'.format(length))
+    print('  layers: {}'.format(layers))
+    print('  number of branches: {}'.format(length))
     return branches, layers, length
 
 
@@ -217,7 +217,7 @@ class DBLoader(Loader):
             cur = db.cursor()
 
             if tree_id is not None:
-                click.echo('Dropping existing entry with tree_id={} ...'.format(tree_id))
+                print('Dropping existing entry with tree_id={} ...'.format(tree_id))
                 cur.execute(r'DELETE FROM branches WHERE "tree_id"=?', [tree_id])
                 cur.execute(r'DELETE FROM tree WHERE "tree_id"=?', [tree_id])
 
@@ -229,7 +229,7 @@ class DBLoader(Loader):
 
             cur.execute('SELECT last_insert_rowid()')
             rowid = cur.fetchone()[0]
-            click.echo('Created new entry with tree_id={}'.format(rowid))
+            print('Created new entry with tree_id={}'.format(rowid))
 
             self.__add_all_branches(cur, rowid, branches=branches, num_branches=num_branches)
             db.commit()
@@ -242,7 +242,7 @@ class DBLoader(Loader):
             # cur.execute('SELECT num_branches FROM tree WHERE tree_id=?', [tree_id])
             # num_branches = cur.fetchone()['num_branches']
 
-            click.echo('Reading branches with tree_id={} ...'.format(tree_id))
+            print('Reading branches with tree_id={} ...'.format(tree_id))
 
             cur.execute('SELECT * FROM branches WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
             results = cur.fetchall()
@@ -264,7 +264,7 @@ class DBLoader(Loader):
             elif depth < layer:
                 raise Exception('branches not in order')
 
-        click.echo('  branches read: {}\n  layers: {}'.format(num_branches, str(layers).strip('[]')))
+        print('  branches read: {}\n  layers: {}'.format(num_branches, str(layers).strip('[]')))
 
         self.__branches = branches
         self.__num_branches = num_branches
@@ -279,7 +279,7 @@ class DBLoader(Loader):
             branches = self.branches
             size = self.num_branches
 
-        click.echo('  adding {} branches ...'.format(size))
+        print('  adding {} branches ...'.format(size))
         for i in range(size):
             branch = branches[i]
             cur.execute('INSERT INTO branches ("ind", depth, length, width, angle, pos_x, pos_y, tree_id)'
@@ -335,7 +335,7 @@ class FileLoader(Loader):
 
         with stream as file:
             head, tail = os.path.split(file.name)
-            click.echo('Saving branches to {} ...'.format(tail))
+            print('Saving branches to {} ...'.format(tail))
             json.dump(branches[:num_branches], file, cls=BranchJSONEncoder)
 
     def __read_branches(self, fpath):
@@ -343,7 +343,7 @@ class FileLoader(Loader):
 
         with stream as file:
             head, tail = os.path.split(file.name)
-            click.echo('Reading branches from {} ...'.format(tail))
+            print('Reading branches from {} ...'.format(tail))
             branches = json.load(file, object_hook=_as_obj_hook)
 
         self.__branches = branches
@@ -360,7 +360,7 @@ class FileLoader(Loader):
                 raise Exception('branches not in order')
         self.__layers = layers
 
-        click.echo('Read tree with {:d} branches, {:d} layers :\n   {} ...'.format(size, len(layers), str(layers)))
+        print('Read tree with {:d} branches, {:d} layers :\n   {} ...'.format(size, len(layers), str(layers)))
 
         return branches
 

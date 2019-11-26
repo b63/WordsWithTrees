@@ -11,6 +11,18 @@ def init_app(app):
 
 
 def parse_range_list(string: str, max: int = 0, min: int = 0):
+    """
+    Parses list of integer ranges of the form "<range>,<range>,..." and returns a list containing those numbers
+    <range> can be the following:
+      1) an integer, eg. 1 or 22
+      2) a closed range, eg. 1-3 or 8-10
+      3) an open range, eg. -9, or 5- where the former corresponds to integers from `min` to 9 and latter
+         the integers from 5 to `max`
+
+    :param max: maximum integer in the list
+    :param min: minimum integer in the list
+    :return: list of integers that corresponds to the ranges in `string`
+    """
     levels = set()
     items = string.split(',')
     if items is None:
@@ -19,7 +31,7 @@ def parse_range_list(string: str, max: int = 0, min: int = 0):
     for item in items:
         try:
             try:
-                index = item.index('-')
+                index = item.strip().index('-')
             except ValueError:
                 index = -1
 
@@ -79,10 +91,13 @@ def validate_zoom(ctx, param, value):
 @with_appcontext
 def render_tiles(zooms, depth, input_str: str, output_str: str):
     """
-    Renders tree of specified max-depth and at specified zoom level to file.
+    Generates/Loads branches from database `branches` table or from local JSON file, and renders the branches
+    at specified a specified 'zoom level'. The 'zoom' level restricts the highest depth of visible branch and the
+    grid-size. For each square of the grid, a full-size image is saved to disk along with a JSON file containing a list
+    of branches visible in the square.
     """
 
-    click.echo('Cache directory: {}'.format(current_app.config['CACHE_DIR']))
+    print('Cache directory: {}'.format(current_app.config['CACHE_DIR']))
 
     input_str, output_str = input_str.strip(), output_str.strip()
 
@@ -100,18 +115,18 @@ def render_tiles(zooms, depth, input_str: str, output_str: str):
         input_str = input_str if input_str else None
         loader.load_branches(file=input_str, max_depth=depth)
 
-    ren = Renderer(max_layers=depth)
+    ren = Renderer()
     # bound check on zoom levels
     zooms = parse_range_list(zooms, max=ren.max_zoom_level, min=0)
 
-    click.echo('Rendering tree with max depth {} at zoom level(s) {} ...'.format(depth, str(zooms).strip('[]')))
+    print('Rendering tree with max depth {} at zoom level(s) {} ...'.format(depth, str(zooms).strip('[]')))
 
     num_zooms = len(zooms)
     for i in range(num_zooms):
         level = zooms[i]
-        click.echo('\nZoom level: {}'.format(level))
+        print('\nZoom level: {}'.format(level))
         ren.render_tree(loader, zoom=level)
-    click.echo()
+    print()
 
     # save branches
     if output_str.startswith('db:') or output_str == 'db':
