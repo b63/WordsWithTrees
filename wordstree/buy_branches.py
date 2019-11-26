@@ -11,7 +11,7 @@ def buy_branches_get():
     """get all the branches that belong to the given user"""
     db = get_db()
 
-    # # Filter view if category specified in query string
+    # Filter view if category specified in query string
     if "filter" in request.args:
         if request.args["filter"] == "visibility":
             cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id'

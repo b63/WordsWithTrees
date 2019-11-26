@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
 <title>Home</title>
 {% endblock %}
 
@@ -22,7 +22,7 @@
       <div class="row">
         <div class="col text-center">
           <p class="h1">Words with Trees</p>
-          <img src="../static/tree.png" alt="" width="250" height="250">
+          <img alt="" height="250" src="../static/tree.png" width="250">
           <p class="h2">Your inventory</p>
         </div>
       </div>
@@ -31,7 +31,7 @@
         <div class="col">
           <ul class="list-group">
             {% for branch in branches %}
-            <li class="list-group-item">{{ branch.text }} <button class="btn-danger">Sell</button></li>
+            <li class="list-group-item">{{ branch.text }} <button class="btn-danger" data-target="#sellModal" data-toggle="modal" data-branch="{{ branch.text }}">Sell</button></li>
             {% else %}
             <li><em>Unbelievable. You have no branches so far. </em></li>
             {% endfor %}
@@ -40,8 +40,28 @@
       </div>
     </div>
     <a href="{{ url_for('buy.buy_branches_get')}}">
-      <button type="button" class="btn btn-outline-success buy-btn">Buy</button>
+      <button class="btn btn-outline-success buy-btn" type="button">Buy</button>
     </a>
+  </div>
+</div>
+
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="sellModal" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="h5 modal-title" id="exampleModalLabel">Selling a branch</h1>
+        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button">Confirm</button>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -53,4 +73,5 @@
 <script src="{{ url_for('static', filename='js/branch.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tree.js') }}"></script>
 <script src="{{ url_for('static', filename='js/init.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sell-branch.js') }}"></script>
 {% endblock %}
