@@ -123,23 +123,34 @@ def generate_tree(max_depth=10, cls=None) -> Tuple[List, List[int], int]:
 
 
 class Loader:
+    """Abstract class for saving/loading branches/tiles from storage"""
 
     def load_branches(self, **kwargs):
+        """Load branches from storage(database, disk, etc)"""
         pass
 
     def save_branches(self, **kwargs):
+        """Save branch information to storage(database, disk, etc)"""
+        pass
+
+    def save_tile(self, **kwargs):
+        """Save tile information to storage(database, disk, etc)"""
         pass
 
     def save_branches_from_loader(self, loader):
+        """same as `save_branches` but list of branches is retrieved from `loader.branches`"""
         pass
 
     def _branches(self) -> List[Branch]:
+        """Return help copy of list of branches"""
         pass
 
     def _num_branches(self) -> int:
+        """Return the number of branches currently stored in memory"""
         pass
 
     def _layers(self) -> List[int]:
+        """Return list of indices for `self.branches` list that correspond to the beginning of a new tree layer"""
         pass
 
     @property
@@ -179,6 +190,7 @@ def _as_obj_hook(dic):
 
 
 class DBLoader(Loader):
+    """Save/load branches/tiles to database"""
 
     def __init__(self, app: Flask):
         self.__app = app
@@ -304,6 +316,8 @@ class DBLoader(Loader):
 
 
 class FileLoader(Loader):
+    """Save/load branches/tiles to and from local JSON files"""
+
     def __init__(self):
         self.__branches = None
         self.__layers = None
