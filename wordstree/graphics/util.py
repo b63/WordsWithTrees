@@ -10,6 +10,15 @@ class JSONifiable:
         pass
 
 
+def path_from(path: str, max_level: int) -> str:
+    if max_level <= 0:
+        return ''
+    head, tail = os.path.split(path.rstrip('/'))
+    if not head or max_level <= 1:
+        return tail
+    return path_from(head, max_level-1) + '/' + tail
+
+
 def create_dir(path):
     """
     Create directory `path` if the path does not already exist, creating parent directories as needed

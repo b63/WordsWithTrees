@@ -1,13 +1,14 @@
 import click
 from flask import current_app
 from flask.cli import with_appcontext
+import os
 
 from wordstree.graphics.loader import Loader, FileLoader, DBLoader
 from wordstree.graphics.render import Renderer
 
 
 def init_app(app):
-    app.cli.add_command(render_tiles)
+    app.cli.add_command(render_tree)
 
 
 def parse_range_list(string: str, max: int = 0, min: int = 0):
@@ -66,7 +67,7 @@ def validate_zoom(ctx, param, value):
     return value
 
 # null character at the end of help messages as a temporary way to get new lines...
-@click.command('render-tiles')
+@click.command('render')
 @click.option('-z', '--zoom', 'zooms', default='0',
               callback=validate_zoom,
               help='\b list of comma separated ranges, or integers that specify \'zoom\' level(s) to render the tree '
@@ -88,8 +89,16 @@ def validate_zoom(ctx, param, value):
               help='Specifies where to save branches; if left empty (default), branches will not be stored. '
                    'See help on \'--from\' for help on other possible values.\n\0'
               )
+@click.option('--cache-tiles/--no-cache-tiles', 'cache_tiles', is_flag=True, default=True,
+              help='whether to render and write PNGs of tiles to disk, by default the tiles will be rendered'
+              )
+@click.option('--name', 'tree_name', default=None,
+              help='Name of the tree; rendered images / json files will be stored in the directory of the same name '
+                   'under the cache directory. If not provided, a default one will be generated if a new tree is being'
+                   'generated.'
+              )
 @with_appcontext
-def render_tiles(zooms, depth, input_str: str, output_str: str):
+def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree_name):
     """
     Generates/Loads branches from database `branches` table or from local JSON file, and renders the branches
     at specified a specified 'zoom level'. The 'zoom' level restricts the highest depth of visible branch and the
@@ -109,41 +118,67 @@ def render_tiles(zooms, depth, input_str: str, output_str: str):
         if tree_id:
             loader.load_branches(tree_id=int(tree_id))
         else:
-            loader.load_branches(max_depth=depth)
+            loader.load_branches(max_depth=depth, tree_name=tree_name)
     else:
         loader = FileLoader()
         input_str = input_str if input_str else None
-        loader.load_branches(file=input_str, max_depth=depth)
+        try:
+            loader.load_branches(file=input_str, max_depth=depth, tree_name=tree_name)
+        except FileNotFoundError:
+            abpath = os.path.abspath(os.path.join(current_app.config['CACHE_DIR'], input_str))
+            raise click.BadParameter(r"file '{}' does not exist".format(abpath))
 
     ren = Renderer()
     # bound check on zoom levels
     zooms = parse_range_list(zooms, max=ren.max_zoom_level, min=0)
 
-    print('Rendering tree with max depth {} at zoom level(s) {} ...'.format(depth, str(zooms).strip('[]')))
+    print('\nRendering tree with max depth {} at zoom level(s) {} ...'.format(depth, str(zooms).strip('[]')))
 
     num_zooms = len(zooms)
     for i in range(num_zooms):
         level = zooms[i]
-        print('\nZoom level: {}'.format(level))
+        if i > 0:
+            print()
+        print('Zoom level: {}'.format(level))
         ren.render_tree(loader, zoom=level)
-    print()
 
     # save branches
+    save_kwargs = dict()
     if output_str.startswith('db:') or output_str == 'db':
         saver = DBLoader(current_app)
         tree_id = output_str[3:]
         tree_id = int(tree_id) if tree_id else None
+        save_kwargs['tree_id'] = tree_id
 
         saver.save_branches(
             tree_id=tree_id,
             width=ren.BASE_WIDTH, height=ren.BASE_WIDTH,
             branches=loader.branches,
-            num_branches=loader.num_branches
+            num_branches=loader.num_branches,
+            tree_name=tree_name
         )
     elif output_str:
         saver = FileLoader()
+        save_kwargs['file'] = output_str
+
         saver.save_branches(
             file=output_str,
             branches=loader.branches,
-            num_branches=loader.num_branches
+            num_branches=loader.num_branches,
+            tree_name=tree_name
         )
+    else:
+        saver = loader
+
+    # render/cache tiles and save SVGs of full tree
+    for i in range(num_zooms):
+        if i == 0:
+            print('\nRendering SVGs/tiles ...'.format())
+        else:
+            print()
+
+        level = zooms[i]
+        print('Zoom level: {}'.format(level))
+        ren.save_full_tree(zoom=level, saver=saver)
+        if cache_tiles:
+            ren.cache_tiles(zoom=level, saver=saver, saver_args=save_kwargs)
