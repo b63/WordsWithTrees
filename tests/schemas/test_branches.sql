@@ -1,5 +1,8 @@
+-- Test Tree with zero branches for unit tests
+INSERT INTO tree (tree_id, num_branches, tree_name, full_width, full_height) VALUES (1945, 0, "dummy_test_tree", 100, 100);
+
 --- Test Tree of depth 8 for unit tests
-INSERT INTO tree (tree_id, num_branches, full_width, full_height) VALUES (1938, 255, 1024, 1024);
+INSERT INTO tree (tree_id, tree_name, num_branches, full_width, full_height) VALUES (1938, "test_tree_8", 255, 1024, 1024);
 
 INSERT INTO branches (id, ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES (1, 0, 0, 0.3, 0.01, 4.71238898038469, 0.5, 0.99, 1938);
 INSERT INTO branches (id, ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES (2, 1, 1, 0.034437282937324856, 0.008, 5.213286660292697, 0.49999999999999994, 0.69, 1938);
