@@ -155,3 +155,58 @@ def query_zoom():
 
     return response
 
+
+@bp.route('/tile-img', methods=['GET'])
+def query_tile():
+    zoom_level = request.args.get('zoom', default=0)
+    row = request.args.get('row', default=0)
+    col = request.args.get('col', default=0)
+    res_type = request.args.get('type', default='img')
+    tree_id = request.args.get('tree-id')
+    zoom_id = request.args.get('zoom-id')
+
+    if not tree_id and not zoom_id:
+        return Response('zoom-id or tree-id and zoom must be provided', status=500)
+    if res_type not in ['img', 'json']:
+        return Response('\'{}\' type unknown'.format(res_type), status=500)
+
+    try:
+        row = int(row)
+        col = int(col)
+
+        cur = get_db().cursor()
+        if zoom_id:
+            cur.execute('SELECT * FROM tiles WHERE zoom_id=? AND tile_row=? AND tile_col=?', [zoom_id, row, col])
+        else:
+            cur.execute(
+                'SELECT * FROM tiles INNER JOIN zoom_info zi ON tiles.zoom_id = zi.zoom_id WHERE '
+                'zoom_level=? AND tree_id=? AND tile_row=? AND tile_col=?', [zoom_level, tree_id, row, col]
+            )
+        row = cur.fetchone()
+        if row is None:
+            return Response('tile not found', status=404)
+
+        if res_type == 'img':
+            with open(row['img_file'], mode='rb') as f:
+                response = Response(
+                    response=f.read(),
+                    mimetype='image/png',
+                    content_type='image/png'
+                )
+        else:
+            with open(row['json_file'], mode='r') as f:
+                response = Response(
+                    response=f.read(),
+                    mimetype='application/json',
+                    content_type='application/json'
+                )
+
+        return response
+    except FileNotFoundError:
+        return Response('tile data not found', status=404)
+    except ValueError as e:
+        return Response(str(e), status=500)
+
+
+
+
