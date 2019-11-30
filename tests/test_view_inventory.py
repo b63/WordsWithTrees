@@ -39,9 +39,8 @@ def test_view_inventory(client, app):
 def test_sell_branch(client, app):
     signup_login(client)
     insert_branch(app, "Branch 1", 1, 1, 1, 0)
-    insert_branch(app, "Branch 2", 1, 2, 1, 0)
     rv = client.post('sell', data=dict(
         selling_price=20,
-        branch_id=1), follow_redirect=True)
+        branch_id=1), follow_redirects=True)
     assert b'Branch 1' not in rv.data
 
