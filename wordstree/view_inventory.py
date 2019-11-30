@@ -11,11 +11,14 @@ def view_inventory():
     db = get_db()
     user_id = session['user_id']
 
-    cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id = b.id'
+    cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b ON branches_ownership.branch_id = b.id'
                      ' WHERE owner_id = ? AND available_for_purchase = 0', [user_id])
     branches = cur.fetchall()
 
-    return render_template("view_inventory.html", branches=branches)
+    cur = db.execute('SELECT name, token FROM users WHERE id = 1')
+    user = cur.fetchone()
+
+    return render_template("view_inventory.html", branches=branches, user=user)
 
 
 
