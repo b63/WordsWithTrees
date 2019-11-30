@@ -7,5 +7,3 @@ def signup_login(client):
         'password': 'qwertY123',
         'password-confirm': 'qwertY123'}, follow_redirects=True)
 
-
-def
