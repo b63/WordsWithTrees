@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
 <title>Home</title>
 {% endblock %}
 
@@ -11,38 +11,78 @@
 
 {% block body %}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-md-9 canv">
-      <div id="canvas-wrapper">
-        <canvas id="tree_canvas">
-        </canvas>
-      </div>
-    </div>
-    <div class="col-md-3 mt-4">
-      <div class="row">
-        <div class="col text-center">
-          <p class="h1">Words with Trees</p>
-          <img src="../static/tree.png" alt="" width="250" height="250">
-          <p class="h2">Your inventory</p>
+    <div class="row">
+        <div class="col-md-9 canv">
+            <div id="canvas-wrapper">
+                <canvas id="tree_canvas">
+                </canvas>
+            </div>
         </div>
-      </div>
+        <div class="col-md-3 mt-4">
+            <div class="row">
+                <div class="col text-center">
+                    <p class="h1">Words with Trees</p>
+                    <img alt="" height="250" src="../static/tree.png" width="250">
+                    <p class="h2">Your inventory</p>
+                </div>
+            </div>
 
-      <div class="row">
-        <div class="col">
-          <ul class="list-group">
-            {% for branch in branches %}
-            <li class="list-group-item">{{ branch.text }} <button class="btn-danger">Sell</button></li>
-            {% else %}
-            <li><em>Unbelievable. You have no branches so far. </em></li>
-            {% endfor %}
-          </ul>
+            <div class="row">
+                <div class="col">
+                    <ul class="list-group">
+                        {% for branch in branches %}
+                        <li class="list-group-item">{{ branch.text }}
+                            <button class="btn-danger" data-branch="{{ branch.text }}" data-id="{{ branch.id }}"
+                                    data-target="#sellModal"
+                                    data-toggle="modal">Sell
+                            </button>
+                        </li>
+                        {% else %}
+                        <li><em>Unbelievable. You have no branches so far. </em></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
+        <a href="{{ url_for('buy.buy_branches_get')}}">
+            <button class="btn btn-outline-success buy-btn" type="button">Buy</button>
+        </a>
     </div>
-    <a href="{{ url_for('buy.buy_branches_get')}}">
-      <button type="button" class="btn btn-outline-success buy-btn">Buy</button>
-    </a>
-  </div>
+</div>
+
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="sellModal" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="h5 modal-title" id="exampleModalLabel">Selling a branch</h1>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('sell.sell_branches_post') }}" class="form-signin needs-validation"
+                      method="post"
+                      novalidate="">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <label for="selling_price">Selling Price</label>
+                            <input autofocus class="form-control" name="selling_price" required type="number" min="1"
+                                   step="1" max="99">
+                            <div class="invalid-feedback">
+                                You must provide a valid selling price between 1 and 99.
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="branch_id" class="branch_id">
+                <button class="btn btn-primary" type="submit">Confirm</button>
+            </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -53,4 +93,6 @@
 <script src="{{ url_for('static', filename='js/branch.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tree.js') }}"></script>
 <script src="{{ url_for('static', filename='js/init.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sell-branch.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
 {% endblock %}
