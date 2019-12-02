@@ -49,6 +49,10 @@ def connect_db():
     """Connects to the specific database."""
     rv = sqlite3.connect(current_app.config['DATABASE'])
     rv.row_factory = sqlite3.Row
+    # enable foreign key support
+    rv.execute('PRAGMA foreign_keys = ON;')
+    rv.commit()
+
     return rv
 
 

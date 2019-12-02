@@ -17,7 +17,8 @@ def app():
         'DATABASE': db_path,
         'CACHE_DIR': cache_path,
         'IMAGE_DIR': os.path.join(cache_path, 'images'),
-        'TEST_TREE_ID': 1938
+        'TEST_TREE_ID': 1938,  # tree has of branches
+        'DUMMY_TEST_TREE_ID': 1945  # tree has no branches
     })
 
     with app.app_context():
@@ -32,5 +33,3 @@ def app():
 @pytest.fixture
 def client(app):
     return app.test_client()
-
-
