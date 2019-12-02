@@ -5,6 +5,9 @@ from flask import Blueprint, Flask, request, g, redirect, url_for, render_templa
 from wordstree.db import get_db
 
 
+bp = Blueprint('api', __name__, url_prefix='/api')
+
+
 def _to_csv(arr):
     csv = ''
     length = len(arr)
@@ -13,9 +16,6 @@ def _to_csv(arr):
             csv += ', '
         csv += arr[i]
     return csv
-
-
-bp = Blueprint('api', __name__, url_prefix='/api')
 
 
 @bp.route('/tree', methods=['GET'])
@@ -156,7 +156,7 @@ def query_zoom():
     return response
 
 
-@bp.route('/tile-img', methods=['GET'])
+@bp.route('/tile', methods=['GET'])
 def query_tile():
     zoom_level = request.args.get('zoom', default=0)
     row = request.args.get('row', default=0)
