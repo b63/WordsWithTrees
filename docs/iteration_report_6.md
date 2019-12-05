@@ -16,6 +16,9 @@ Ted worked on implementing the feature to enable a user to sell a tree branch an
 ## Problems and Struggles
 Although it was Thanksgiving, our team members were still able to work on the project individually. By this time, we have already gotten used to the workflow of writing unit tests, developing feature within a branch, and merging completed working code into master.
 
+## Lesson Learned
+This week we learned to implement Bootstrap modal to make our website more UI-friedly and less boring, and repetitive. Instead of directing a user to a new page for buying/selling a branch, th user can now input information regarding buy/sell through a modern-looking modal window.
+
 
 ## Plan for Final Week
 - Ensure that tree rendering on the front-end has low latency and is as responsive as possible: Bhavin
