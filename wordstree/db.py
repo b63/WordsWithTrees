@@ -26,9 +26,9 @@ def init_db():
             )
         ))
 
-        click.echo('Reading schemas from {} ...'.format(_dir))
+        print('Reading schemas from {} ...'.format(_dir))
         for file in files:
-            click.echo('    reading {}'.format(file))
+            print('    reading {}'.format(file))
             with open(os.path.join(_dir, file), mode='r') as f:
                 db.cursor().executescript(f.read())
 
@@ -49,6 +49,10 @@ def connect_db():
     """Connects to the specific database."""
     rv = sqlite3.connect(current_app.config['DATABASE'])
     rv.row_factory = sqlite3.Row
+    # enable foreign key support
+    rv.execute('PRAGMA foreign_keys = ON;')
+    rv.commit()
+
     return rv
 
 

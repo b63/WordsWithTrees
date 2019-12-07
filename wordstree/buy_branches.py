@@ -26,8 +26,8 @@ def insert_branch(text, depth, ind, owner_id, sell, db):
 def buy_branches_get():
     """get all the branches that belong to the given user"""
     db = get_db()
-    # insert_branch("hello there", 1, 1, 1, 1, db)
-    # # Filter view if category specified in query string
+
+    # Filter view if category specified in query string
     if "filter" in request.args:
         if request.args["filter"] == "visibility":
             cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id'

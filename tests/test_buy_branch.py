@@ -7,7 +7,6 @@ def signup_login(client):
         'password': 'qwertY123',
         'password-confirm': 'qwertY123'}, follow_redirects=True)
 
-
 def insert_branch(app, text, depth, ind, owner_id, sell):
     with app.app_context():
         db = get_db()
@@ -40,4 +39,3 @@ def test_buy_branches(client, app):
         db = get_db()
         # print("hello there")
         # cur = db.execute('SELECT text FROM branches_ownership WHERE id=1')
-        #
