@@ -6,69 +6,79 @@
 {% endblock %}
 
 {% block profile %}
-<ul class="nav navbar-nav navbar-right">
+<ul class="navbar-nav ml-md-auto" id="user-info">
     <li class="d-inline p-2 mr-1">Hi, {{ user.name }}</li>
     <li class="d-inline p-2 bg-primary text-white mr-1">{{ user.token }} &Hstrok;</li>
 </ul>
 {% endblock %}
 
 {% block button %}
-<a class="btn btn-success mr-1" href="{{ url_for('view_inventory.view_inventory') }}">Inventory</a>
-<a class="btn btn-success ml-auto mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
+<ul class="navbar-nav bd-navbar-nav flex-row">
+    <li class="nav-item">
+        <a class="btn btn-success mr-1" href="{{ url_for('view_inventory.view_inventory') }}">Inventory</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn btn-success mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
+    </li>
+</ul>
 {% endblock %}
 
 {% block body %}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-md-9 canv">
-      <div id="canvas-wrapper">
-        <canvas id="tree_canvas">
-        </canvas>
-      </div>
-    </div>
-    <div class="col-md-3 mt-4">
-      <div class="row">
-        <div class="col text-center">
-          <p class="h1">Words with Trees</p>
-          <img src="../static/tree.png" alt="" width="250" height="250">
-          <p class="h2">Buy Trees</p>
-        </div>
-        <div class="row">
-          <div class="input-group md-form form-sm form-2 pl-0 mb-3 col-9 ml-1">
-            <form class="form-inline mr-auto">
-              <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-success btn-rounded btn-sm my-0" type="submit">Search</button>
-            </form>
-          </div>
-          <div class="dropdown show col-2">
-            <a class="btn btn-secondary dropdown-toggle bg-success" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Filter By:
-            </a>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-              <a class="dropdown-item" href="?filter=visibility">Visibility</a>
-              <a class="dropdown-item" href="?filter=price">Price</a>
+    <div class="row">
+        <div class="col-md-9 canv">
+            <div id="canvas-wrapper">
+                <canvas id="tree_canvas">
+                </canvas>
             </div>
-          </div>
         </div>
+        <div class="col-md-3 mt-4">
+            <div class="row">
+                <div class="col text-center">
+                    <p class="h1">Words with Trees</p>
+                    <img src="../static/tree.png" alt="" width="250" height="250">
+                    <p class="h2">Buy Trees</p>
+                </div>
+                <div class="row">
+                    <div class="input-group md-form form-sm form-2 pl-0 mb-3 col-9 ml-1">
+                        <form class="form-inline mr-auto">
+                            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success btn-rounded btn-sm my-0" type="submit">Search
+                            </button>
+                        </form>
+                    </div>
+                    <div class="dropdown show col-2">
+                        <a class="btn btn-secondary dropdown-toggle bg-success" href="#" role="button"
+                           id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Filter By:
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="?filter=visibility">Visibility</a>
+                            <a class="dropdown-item" href="?filter=price">Price</a>
+                        </div>
+                    </div>
+                </div>
 
-      </div>
+            </div>
 
-      <div class="row">
-        <div class="col">
-          <ul class="list-group">
-            {% for branch in branches %}
-            <li class="list-group-item">{{ branch.text }} <button class="btn-danger">Sell</button></li>
-            {% else %}
-            <li><em>Unbelievable. There are no available branches to purchase </em></li>
-            {% endfor %}
-          </ul>
+            <div class="row">
+                <div class="col">
+                    <ul class="list-group">
+                        {% for branch in branches %}
+                        <li class="list-group-item">{{ branch.text }}
+                            <button class="btn-danger">Sell</button>
+                        </li>
+                        {% else %}
+                        <li><em>Unbelievable. There are no available branches to purchase </em></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
+        <a href="{{ url_for('root.home')}}">
+            <button class="btn btn-outline-success buy-btn">Inventory</button>
+        </a>
     </div>
-    <a href="{{ url_for('root.home')}}">
-      <button class="btn btn-outline-success buy-btn">Inventory</button>
-    </a>
-  </div>
 </div>
 {% endblock %}
 
