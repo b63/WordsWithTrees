@@ -5,7 +5,15 @@
 <title>Home</title>
 {% endblock %}
 
+{% block profile %}
+<ul class="nav navbar-nav navbar-right">
+    <li class="d-inline p-2 mr-1">Hi, {{ user.name }}</li>
+    <li class="d-inline p-2 bg-primary text-white mr-1">{{ user.token }} &Hstrok;</li>
+</ul>
+{% endblock %}
+
 {% block button %}
+<a class="btn btn-success mr-1" href="{{ url_for('view_inventory.view_inventory') }}">Inventory</a>
 <a class="btn btn-success ml-auto mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
 {% endblock %}
 

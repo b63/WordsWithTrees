@@ -11,6 +11,8 @@ def buy_branches_get():
     """get all the branches that belong to the given user"""
     db = get_db()
 
+    user_id = session['user_id']
+
     # Filter view if category specified in query string
     if "filter" in request.args:
         if request.args["filter"] == "visibility":
@@ -27,7 +29,10 @@ def buy_branches_get():
                          '= b.id WHERE available_for_purchase=1 ORDER BY b.id DESC')
         available_branches = cur.fetchall()
 
-    return render_template('buy_branch.html', branches=available_branches)
+    cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
+    user = cur.fetchone()
+
+    return render_template('buy_branch.html', branches=available_branches, user=user)
 
 #
 # @bp.route('/buy', methods =['POST'])
