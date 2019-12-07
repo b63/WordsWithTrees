@@ -1,10 +1,7 @@
-import os
-import sys
-import tempfile
-import pytest
 from flask import current_app, session
 from wordstree.db import init_db, get_db
 from werkzeug.security import check_password_hash, generate_password_hash
+
 
 def register_user(name, username, password):
     db = get_db()

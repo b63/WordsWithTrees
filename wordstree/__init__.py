@@ -14,6 +14,8 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.root_path, DATABASE_FILE),
         DEBUG=True,
         SECRET_KEY='development key',
+        CACHE_DIR=os.path.join(app.root_path, 'cache'),
+        IMAGE_DIR=os.path.join(app.root_path, 'cache/images')
     )
     app.config.from_envvar('FLASKR_SETTINGS', silent=True)
     if test_config:
@@ -27,6 +29,9 @@ def create_app(test_config=None):
 
     from . import home
     app.register_blueprint(home.bp)
+
+    from . import api
+    app.register_blueprint(api.bp)
 
     from . import login
     app.register_blueprint(login.bp)

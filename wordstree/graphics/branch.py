@@ -56,7 +56,7 @@ class Branch(JSONifiable):
         ctx.rotate(angle)
         ctx.rectangle(0, -width / 2, length, width)
 
-        r, g, b = get_branch_color(self)
+        r, g, b = _get_branch_color(self)
         ctx.set_source_rgba(r, g, b, opacity)
         ctx.fill()
         ctx.restore()
@@ -72,7 +72,6 @@ class Branch(JSONifiable):
         ctx.rotate(-angle)
 
         ctx.show_text('{:d}'.format(self.index))
-
 
         # draw point
         # ctx.rotate(-angle)
@@ -129,7 +128,7 @@ class Branch(JSONifiable):
         return json.dumps(dic)
 
 
-def get_branch_color(branch: Branch) -> Tuple[float, float, float]:
+def _get_branch_color(branch: Branch) -> Tuple[float, float, float]:
     depth = branch.depth
     red = min(2 * depth + 50, 160)
     green = min(1.7 * depth * depth + 50, 255)
