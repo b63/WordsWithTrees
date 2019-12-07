@@ -5,21 +5,21 @@ from werkzeug.security import generate_password_hash
 
 bp = Blueprint('buy', __name__)
 
-
-def insert_branch(text, depth, ind, owner_id, sell, db):
-    cur = db.cursor()
-    db.execute(
-        'INSERT INTO branches (ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES'
-        '(?, ?, ?, ?, ?, ?, ?, 1)',
-        [ind, depth, 1, 10, 0.1, 0, 0]
-    )
-    branch_id = cur.execute('select last_insert_rowid()').fetchone()[0]
-    db.execute(
-        'INSERT INTO branches_ownership (branch_id, owner_id, text, available_for_purchase) VALUES'
-        '(?, ?, ?, ?)',
-        [branch_id, owner_id, text, sell]
-    )
-    db.commit()
+#
+# def insert_branch(text, depth, ind, owner_id, sell, db):
+#     cur = db.cursor()
+#     db.execute(
+#         'INSERT INTO branches (ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES'
+#         '(?, ?, ?, ?, ?, ?, ?, 1)',
+#         [ind, depth, 1, 10, 0.1, 0, 0]
+#     )
+#     branch_id = cur.execute('select last_insert_rowid()').fetchone()[0]
+#     db.execute(
+#         'INSERT INTO branches_ownership (branch_id, owner_id, text, available_for_purchase) VALUES'
+#         '(?, ?, ?, ?)',
+#         [branch_id, owner_id, text, sell]
+#     )
+#     db.commit()
 
 
 @bp.route('/buy', methods=['GET'])
@@ -63,9 +63,9 @@ def buy_branch():
     buying_id = request.form["branch_id"]
     user_id = session['user_id']
     print(buying_id)
-    db.execute('UPDATE branches_ownership SET owner_id=? WHERE id=?', [user_id,buying_id])
-    db.execute('UPDATE branches_ownership SET text=? WHERE id=?', [request.form['new-bt'],buying_id])
-    db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE id=?', [buying_id])
+    db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id,buying_id])
+    db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'],buying_id])
+    db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
     db.commit()
     return redirect(url_for("buy.buy_branches_get"))
 
