@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
 <title>Home</title>
 {% endblock %}
 
@@ -25,114 +25,95 @@
 
 {% block body %}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-md-9 canv">
-      <div id="canvas-wrapper">
-        <canvas id="tree_canvas">
-        </canvas>
-      </div>
-    </div>
-    <div class="col-md-3 mt-4">
-      <div class="row">
-        <div class="col text-center">
-          <p class="h1">Words with Trees</p>
-          <img src="../static/tree.png" alt="" width="250" height="250">
-          <p class="h2">Buy Trees</p>
-        </div>
-
-        <div class="row">
-
-          <div class="input-group md-form form-sm form-2 pl-0 mb-3 col-9 ml-1">
-            <form action="{{ url_for('buy.buy_branches_search') }}" method="get" class="form-inline mr-auto">
-              <input class="form-control mr-sm-2" type="text" name="search_field" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-success btn-rounded btn-sm my-0" type="submit">Search</button>
-            </form>
-          </div>
-
-          <div class="dropdown show col-2">
-            <a class="btn btn-secondary dropdown-toggle bg-success" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Filter By:
-            </a>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-              <a class="dropdown-item" href="?filter=visibility">Visibility</a>
-              <a class="dropdown-item" href="?filter=price">Price</a>
+    <div class="row">
+        <div class="col-md-9 canv">
+            <div id="canvas-wrapper">
+                <canvas id="tree_canvas">
+                </canvas>
             </div>
-          </div>
         </div>
         <div class="col-md-3 mt-4">
             <div class="row">
                 <div class="col text-center">
                     <p class="h1">Words with Trees</p>
-                    <img src="../static/tree.png" alt="" width="250" height="250">
+                    <img alt="" height="250" src="../static/tree.png" width="250">
                     <p class="h2">Buy Trees</p>
                 </div>
+
                 <div class="row">
+
                     <div class="input-group md-form form-sm form-2 pl-0 mb-3 col-9 ml-1">
-                        <form class="form-inline mr-auto">
-                            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                        <form action="{{ url_for('buy.buy_branches_search') }}" class="form-inline mr-auto"
+                              method="get">
+                            <input aria-label="Search" class="form-control mr-sm-2" name="search_field" placeholder="Search"
+                                   type="text">
                             <button class="btn btn-outline-success btn-rounded btn-sm my-0" type="submit">Search
                             </button>
                         </form>
                     </div>
+
                     <div class="dropdown show col-2">
-                        <a class="btn btn-secondary dropdown-toggle bg-success" href="#" role="button"
-                           id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle bg-success"
+                           data-toggle="dropdown" href="#" id="dropdownMenuLink" role="button">
                             Filter By:
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <div aria-labelledby="dropdownMenuLink" class="dropdown-menu">
                             <a class="dropdown-item" href="?filter=visibility">Visibility</a>
                             <a class="dropdown-item" href="?filter=price">Price</a>
                         </div>
                     </div>
                 </div>
-
             </div>
-          
-      <div class="row">
-        <div class="col">
-          <ul class="list-group">
-            {% for branch in branches %}
-            <li class="list-group-item">{{ branch.text }}
-              <span class="ml-5 mr-5">${{ branch.price }}</span>
-              <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#buyModal"
-                      data-id="{{branch.id}}" data-price="{{ branch.price}}" data-text="{{ branch.text }}">Buy!</button>
-            </li>
-            {% else %}
-            <li><em>Unbelievable. There are no available branches to purchase </em></li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
 
-      <!-- Modal from https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
-      <div id="buyModal" class="modal fade" role="dialog">
-          <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-              <div class="modal-header">
-                <h4>Buy Branch</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-              </div>
-              <form action="{{ url_for('buy.buy_branch') }}" method="post" class="form-signin needs-validation" novalidate="">
-                <div class="modal-body">
-                  <p id="branch_name">Branch name</p>
-                  <p> <span>$ </span><span id="branch_price">price</span></p>
-                  <textarea maxlength="35" name="new-bt">
+            <div class="row">
+                <div class="col">
+                    <ul class="list-group">
+                        {% for branch in branches %}
+                        <li class="list-group-item">{{ branch.text }}
+                            <span class="ml-5 mr-5">${{ branch.price }}</span>
+                            <button class="btn btn-info btn-lg" data-id="{{branch.id}}" data-price="{{ branch.price}}"
+                                    data-target="#buyModal"
+                                    data-text="{{ branch.text }}" data-toggle="modal"
+                                    type="button">Buy!
+                            </button>
+                        </li>
+                        {% else %}
+                        <li><em>Unbelievable. There are no available branches to purchase </em></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Modal from https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
+            <div class="modal fade" id="buyModal" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4>Buy Branch</h4>
+                            <button class="close" data-dismiss="modal" type="button">&times;</button>
+                        </div>
+                        <form action="{{ url_for('buy.buy_branch') }}" class="form-signin needs-validation"
+                              method="post" novalidate="">
+                            <div class="modal-body">
+                                <p id="branch_name">Branch name</p>
+                                <p><span>$ </span><span id="branch_price">price</span></p>
+                                <textarea maxlength="35" name="new-bt">
                   </textarea>
-                  <div class="invalid-feedback">
-                    Your message is too long
-                  </div>
+                                <div class="invalid-feedback">
+                                    Your message is too long
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <input class="branch_id" name="branch_id" type="hidden">
+                                <input class="btn btn-default" id='submit-button' type="submit" value="submit">
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                  <input type="hidden" name="branch_id" class="branch_id">
-                  <input type="submit" class="btn btn-default" id='submit-button' value="submit">
-                </div>
-              </form>
             </div>
-          </div>
-      </div>
+        </div>
     </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
