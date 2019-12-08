@@ -22,7 +22,7 @@ def app():
     })
 
     with app.app_context():
-        init_db()
+        init_db(exclude=['999-dummy.sql'])
     yield app
 
     os.close(db_file)
