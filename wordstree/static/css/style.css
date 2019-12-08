@@ -74,4 +74,13 @@ body {
     color: white;
 }
 
+.toast-header {
+    background-color: #FFCC00;
+    color: black;
+}
+
+.fade {
+    transition: opacity 1s linear;
+}
+
 

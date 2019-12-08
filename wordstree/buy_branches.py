@@ -68,8 +68,8 @@ def buy_branch():
     buying_id = request.form["branch_id"]
     branch_price = request.form["branch_price"]
     user_id = session['user_id']
-    print(buying_id)
-    print(branch_price)
+    print("buy", buying_id)
+    print("price", branch_price)
     db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id, buying_id])
     db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'], buying_id])
     db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
