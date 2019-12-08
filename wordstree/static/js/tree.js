@@ -1,279 +1,344 @@
-class Tree extends createjs.Container {
-    constructor() {
-        super();
-        this.mouseChildren = false;
+const tree = {};
+
+(function(global){
+    global.tile_info_cache = {};
+    global.tree_info_cache = {};
+
+    function request_zoom_info(tree_id, zoom_level) {
+        let params = new URLSearchParams();
+        params.append('q', `${zoom_level},${tree_id}`);
+
+        return fetch('/api/zoom?' + params.toString(), {
+            method: 'GET'
+        }).then(function(response){
+            if(!response.ok || response.status !== 200)
+                throw new Error(response.statusText);
+            return response.json()
+        })
     }
 
-    _getObjectsUnderPoint(x, y, mode) {
-        return [];
+    function request_tree_info(tree_id) {
+        let params = new URLSearchParams();
+        params.append('id', tree_id);
+        params.append('q', 'max_zoom');
+
+        return fetch('/api/tree?' + params.toString(), {
+            method: 'GET'
+        }).then(function(response){
+            if(!response.ok || response.status !== 200)
+                throw new Error(response.statusText);
+            return response.json()
+        })
     }
 
-    _getObjectUnderPoint(x, y, mode) {
-        return null;
-    }
-}
+    function request_tile(row, col, zoom, tree_id, type) {
+        let params = new URLSearchParams();
+        params.append('zoom', zoom);
+        params.append('tree-id', tree_id);
+        params.append('row', row);
+        params.append('col', col);
+        params.append('type', type || 'json');
 
-class FractalTree {
-    constructor(max_depth, stage) {
-        this._stage = stage;
-        this._tree = new Tree();
-        this._max_depth = max_depth;
-        this._layers = [];
-        //this._branches = new Array(Math.pow(4, max_depth));
-
-        this.init_pan();
-        this.init_zoom();
-        this.create_all_layers();
-
-        stage.addChild(this._tree);
+        return fetch('/api/tile?' + params.toString(), {
+            method: 'GET'
+        });
     }
 
-    create_all_layers() {
-        const max_depth = this._max_depth;
-        const _this = this;
-        let i = 0;
+    class Tree extends createjs.Container {
+        constructor(tree_id, zoom_level) {
+            super();
+            this.id = tree_id;
+            this.zoom = zoom_level;
 
-        const f = function () {
-            if (i <= max_depth) {
-                _this.create_layer(i++)
-                    .then(function (args) {
-                        const depth = args[0];
-                        console.log('created layer ', args[0]);
-                        window.setTimeout(f, 0);
-                    })
-                    .catch(console.log);
-            }
-        };
+            this.grid = null;
+            this._pivot_row = 0;
+            this._pivot_col = 0;
+            this.tile_origin_row = 0;
+            this.tile_origin_col = 0;
 
-        window.setTimeout(f, 0);
-    }
-
-    create_layer(depth) {
-        const stage = this._stage;
-        const canvas = stage.canvas;
-        const tree = this._tree;
-        const layers = this._layers;
-        const branches = tree.children;
-
-        if (depth > this._max_depth)
-        {
-            console.log('reached max depth');
+            // for animating
+            this.pan = {x: 0, y: 0, dx: 0, dy: 0, mousex: 0, mousey: 0, panning: false};
         }
-        else if (depth === 0)
-        {
-            // create root of tree
-            layers.push(0);
-            let width = Math.max(
-                Math.floor(Math.abs(9 * randn_bm() + FractalTree.ROOT_WIDTH)),
-                FractalTree.ROOT_MIN_WIDTH
-            );
-            branches.push(new Branch(null, {
-                width: width,
-                length: Math.floor(FractalTree.ROOT_LENGTH + 20 * randn_bm()),
-                x: canvas.width / 2,
-                y: canvas.height
-            }));
-            return Promise.resolve([0]);
-        }
-        else
-        {
-            const len = branches.length;
-            let j = layers[layers.length - 1];
-            const process = function (complete, quit) {
-                const lim = j + 100;
-                for (; j < lim && j < len; ++j) {
-                    let parent = branches[j];
-                    let children = FractalTree.generate_branches(parent, depth);
 
-                    for (const branch of children) {
-                        branches.push(branch);
+        init_tree_info() {
+            const _this = this;
+            request_tree_info(this.id).then(function(json){
+                for (let i = 0; i < json.length; ++i){
+                    const info = json[i];
+                    global.tree_info_cache[info['tree_id']] = info;
+                }
+            });
+        }
+
+        init_grid() {
+            const canvas = this.stage.canvas;
+            const id = this.id, zoom = this.zoom;
+            const _this = this;
+
+            return request_zoom_info(id, zoom).then(function(response){
+                const height = canvas.height, width = canvas.width;
+                const tile_info = response[0];
+                if(!global.tile_info_cache[id])
+                {
+                    const obj = {};
+                    obj[zoom] = tile_info;
+                    global.tile_info_cache[id] = obj;
+                }
+                else
+                {
+                    global.tile_info_cache[id][zoom] = tile_info;
+                }
+
+
+                const cols = Math.min(Math.floor(width/tile_info['image_width']) + 2, tile_info.grid);
+                const rows = Math.min(Math.floor(height/tile_info['image_height']) + 2, tile_info.grid);
+                const grid = new Array(rows);
+
+                for(let i = 0; i < rows; ++i) {
+
+                    grid[i] = new Array(cols);
+                    for(let j = 0; j < cols; ++j) {
+                        // to avoid creating new Tile object every time
+                        const tile = new Tile(null, null, null, null)
+                        grid[i][j] = tile;
+                        _this.addChild(tile);
                     }
                 }
-                if (j >= len) {
-                    layers.push(len);
-                    complete(depth);
+
+                _this.grid = grid;
+            });
+        }
+
+        change_zoom(center_x, center_y, i) {
+            const tile_info = global.tile_info_cache[this.id][this.zoom];
+            const max_zoom = global.tree_info_cache[this.id]['max_zoom'];
+            const _this = this;
+
+            const image_width = tile_info['image_width'], image_height = tile_info['image_height'];
+            const origin_col = this.tile_origin_col, origin_row = this.tile_origin_row;
+            const grid_size = tile_info['grid'];
+
+            this.zoom = Math.min(max_zoom-1, this.zoom + i);
+            this.removeAllChildren();
+            this.init_grid().then(() => {
+                const new_tile_info = global.tile_info_cache[_this.id][_this.zoom];
+                const new_grid_size = new_tile_info['grid'];
+                const new_image_width = new_tile_info['image_width'];
+                const new_image_height = new_tile_info['image_height'];
+                const new_tile_dx = 1/new_grid_size, new_tile_dy = 1/new_grid_size;
+
+                // distance from top corner to center point
+                const dcx_norm = (center_x - _this.x)/image_width/grid_size;
+                const dcy_norm = (center_y - _this.y)/image_height/grid_size;
+
+                // find coordinates of center point
+                let cx_norm =  dcx_norm + origin_col / grid_size;
+                let cy_norm =  dcy_norm + origin_row / grid_size;
+
+                // distance to top corner to center point in units of zoomed grid
+                const dcx_norm_new = (center_x - _this.x)/new_image_width/new_grid_size;
+                const dcy_norm_new = (center_y - _this.y)/new_image_height/new_grid_size;
+
+                // coordinate of top corner
+                let x_norm = cx_norm - dcx_norm_new;
+                let y_norm = cy_norm - dcy_norm_new;
+
+                // floor to coordinate of top of a tile
+                let tile_x_norm = Math.floor(x_norm/new_tile_dx)*new_tile_dy;
+                let tile_y_norm = Math.floor(y_norm/new_tile_dy)*new_tile_dy;
+
+                _this.load_tiles(tile_x_norm, tile_y_norm).then(function(value){
+                    let shift_x = (x_norm * new_grid_size - _this.tile_origin_col) * new_image_width;
+                    let shift_y = (y_norm * new_grid_size - _this.tile_origin_row) * new_image_height;
+
+                    _this.x -= shift_x;
+                    _this.y -= shift_y;
+                    _this.stage.update();
+                });
+
+            });
+        }
+
+        load_tiles(x_norm, y_norm) {
+            const canvas = this.stage.canvas;
+            const id = this.id, zoom = this.zoom;
+            const _this = this;
+
+            const tile_info = global.tile_info_cache[id][zoom];
+            const image_width = tile_info['image_width'], image_height = tile_info['image_height'];
+            const grid = this.grid;
+            const rows = grid.length, cols = grid[0].length;
+
+            // find the row,col of the tile that contains the point (x_norm, y_norm)
+            // it will be placed on the top left, if possible
+            x_norm = Math.max(x_norm, 0);
+            y_norm = Math.max(y_norm, 0);
+            const origin_col = Math.min(Math.floor(x_norm*tile_info.grid), tile_info.grid - cols);
+            const origin_row = Math.min(Math.floor(y_norm*tile_info.grid), tile_info.grid - rows);
+            console.log('origin:', origin_row, origin_col);
+
+            // find new pivot in the grid
+            let grid_row = ((origin_row - this.tile_origin_row ) % rows) + this._pivot_row;
+            let grid_col = ((origin_col - this.tile_origin_col ) % cols) + this._pivot_col;
+            if (grid_row < 0) { grid_row += rows; }
+            if (grid_col < 0) { grid_col += cols; }
+            console.log('pivot:', grid_row, grid_col);
+
+            // update tile origin position
+            this.tile_origin_row = origin_row;
+            this.tile_origin_col = origin_col;
+            this._pivot_row = grid_row;
+            this._pivot_col = grid_col;
+
+            const inner = function inner(resolve, reject)
+            {
+                let total = 0, requests_done = false;
+                let finished = 0;
+                for (let i = 0; i < rows; ++i)
+                {
+                    const tile_row = i + origin_row;
+                    const _grid_row = (i + grid_row) % rows;
+                    const row_arr = grid[_grid_row];
+                    for (let j = 0; j < cols; ++j)
+                    {
+                        const tile_col = j + origin_col;
+                        const _grid_col = (j + grid_col) % cols;
+                        let tile = row_arr[_grid_col];
+
+                        if (tile_row === tile.tile_row && tile_col === tile.tile_col) {
+                            // same tile, no need to request the same tile
+                            tile.x = j * image_width;
+                            tile.y = i * image_height;
+                            _this.stage.update();
+                            continue;
+                        }
+
+                        // not same, need to request tile
+                        total += 1;
+                        let image = null;
+                        let branches = null;
+                        request_tile(tile_row, tile_col, zoom, id, 'img')
+                            .then(response => response.blob())
+                            .then(createImageBitmap)
+                            .then(
+                                function (bitmap) {
+                                    image = bitmap;
+                                    return request_tile(tile_row, tile_col, zoom, id, 'json');
+                                }
+                            )
+                            .then(response => response.json())
+                            .then(
+                                function (json) {
+                                    if(_this.tile_origin_row !== origin_row && _this.tile_origin_col !== origin_col)
+                                        reject();
+                                    branches = json[0] || [];
+                                    tile.set_tile(image, branches, tile_row, tile_col);
+                                    tile.x = (j) * image_width;
+                                    tile.y = (i) * image_height;
+                                    _this.stage.update();
+
+                                    finished += 1;
+                                    if (requests_done && finished >= total) {
+                                        resolve(finished);
+                                    }
+                                }
+                            )
+                            .catch(function(reason){
+                                console.error(reason.toString());
+                            });
+                    }
                 }
-                stage.update();
-            };
-            return process_sparse(process, 100);
+                requests_done = true;
+                if(finished >= total) {
+                    resolve(finished);
+                }
+            }; // end of inner function body
+
+            return new Promise(inner);
+        } // end of init_tiles body
+
+        animate_pan() {
+            const drag = 0.2;
+            const accel = 0.99;
+            const _this = this;
+            const min_delta = 1;
+
+            this.pan.x = this.pan.mousex;
+            this.pan.y = this.pan.mousey;
+            this.pan.dx = 0;
+            this.pan.dy = 0;
+
+            function inner(resolve, reject){
+                const pan = _this.pan;
+                const diffx = (pan.mousex - pan.x);
+                const diffy = (pan.mousey - pan.y);
+
+                pan.dx += diffx * accel;
+                pan.dy += diffy * accel;
+
+                pan.dx *= drag;
+                pan.dy *= drag;
+
+                let abs_dx = Math.abs(diffx);
+                let abs_dy = Math.abs(diffx);
+
+                //if (abs_dx < min_delta) { pan.dx = diffx; }
+                //if (abs_dy < min_delta) { pan.dy = diffy; }
+
+                pan.x += pan.dx;
+                pan.y += pan.dy;
+
+                let nx = _this.x + pan.dx;
+                let ny = _this.y + pan.dy;
+
+                _this.x = nx;
+                _this.y = ny;
+
+                if ( pan.panning || abs_dx > min_delta || abs_dy > min_delta) {
+                    _this.stage.update();
+                    requestAnimationFrame(() => inner(resolve, reject));
+                } else {
+                    const tile_info = global.tile_info_cache[_this.id][_this.zoom];
+                    const tile_dx = tile_info['tile_width'], tile_dy = tile_info['tile_height'];
+                    const image_width = tile_info['image_width'], image_height = tile_info['image_height'];
+                    const origin_col = _this.tile_origin_col, origin_row = _this.tile_origin_row;
+                    const grid_size = tile_info['grid'];
+
+                    let dcol = floor_ceil(_this.x/image_width);
+                    let drow = floor_ceil(_this.y/image_height);
+                    console.log('x,y ', _this.x,',', _this.y, '  dcol,drow ', dcol,',', drow);
+
+                    let x_norm = -dcol/grid_size + _this.tile_origin_col/grid_size  ;
+                    let y_norm = -drow/grid_size + _this.tile_origin_row/grid_size;
+
+                    _this.load_tiles(x_norm, y_norm).then(function(finished){
+                        const dcol = _this.tile_origin_col - origin_col;
+                        const drow = _this.tile_origin_row - origin_row;
+                        console.log(dcol, drow);
+
+                        _this.x -= -dcol * image_width;
+                        _this.y -= -drow * image_height;
+                        console.log('pos ', _this.x, _this.y);
+                        _this.stage.update();
+                    });
+
+                    resolve();
+                }
+            }
+
+            return new Promise(inner);
+        } // end of animate_pan
+    } // end of Tree class body
+
+    function floor_ceil(x) {
+        if (x < 0) {
+            return Math.ceil(x);
+        } else {
+            return Math.ceil(x);
         }
     }
 
-    init_pan() {
-        const stage = this._stage;
-        const tree = this._tree;
-        let start_mpos = {x: 0, y: 0};
-        let start_pos = {x: 0, y: 0}, target_pos = {x: 0, y: 0};
 
-        stage.addEventListener('mousedown', function (ev) {
-            start_mpos.x = ev.stageX;
-            start_mpos.y = ev.stageY;
-            start_pos.x = tree.x;
-            start_pos.y = tree.y;
-        });
+    global.Tree = Tree;
 
-        let updating_pos = false;
-        stage.addEventListener('pressmove', function (ev) {
-            let dx = ev.stageX - start_mpos.x, dy = ev.stageY - start_mpos.y;
-            target_pos.x = start_pos.x + dx;
-            target_pos.y = start_pos.y + dy;
-            if (!updating_pos) {
-                createjs.Ticker.on('tick', function () {
-                    tree.set(target_pos);
-                    stage.update();
-                    updating_pos = false;
-                }, null, true);
-            }
-
-            updating_pos = true;
-        });
-    }
-
-    init_zoom() {
-        const stage = this._stage;
-        const canvas = stage.canvas;
-        const tree = this._tree;
-        const scroll_max = 20.0;
-
-        let zooming = false, wheel = 0, lastest_mpos = {x: 0, y: 0};
-        canvas.addEventListener('wheel', function (ev) {
-            lastest_mpos.x = ev.clientX;
-            lastest_mpos.y = ev.clientY;
-            wheel += ev.deltaY;
-            if (Math.abs(wheel) > scroll_max) {
-                wheel = wheel < 0 ? scroll_max : scroll_max;
-            }
-
-            if (!zooming) {
-                createjs.Ticker.on('tick', function () {
-                    const rect = canvas.getBoundingClientRect();
-                    const scale = tree.scale, offset = {
-                        // coordinate of pixel under cursor relative to top left of scaled tree
-                        x: (lastest_mpos.x - rect.x - tree.x),
-                        y: (lastest_mpos.y - rect.y - tree.y)
-                    };
-                    // zoom in by more if already zoomed in
-                    const dir = wheel < 0 ? -1 : 1;
-                    let extra = scale > 2 ? dir * scale/10 : 0;
-                    const nscale = Math.min(Math.max(scale + wheel / 20 + extra, 0.3), 20.0);
-                    wheel = 0;
-
-                    tree.scale = nscale;
-                    // scaling the tree shifted the tree a little bit
-                    // translate back so cursor remains in same place relative to tree
-                    tree.x -= offset.x * (nscale / scale - 1);
-                    tree.y -= offset.y * (nscale / scale - 1);
-
-                    //tree.updateCache();
-                    stage.update();
-                    zooming = false;
-                }, null, true);
-            }
-            ev.preventDefault();
-            zooming = true;
-        }, {capture: true});
-    }
-
-    static generate_branches(parent, depth) {
-        const delta_angle = FractalTree.ANGLE_SPREAD;
-
-        //const num_branches = Math.min(Math.floor(Math.abs(19*randn_bm())/(depth+1)), 3);
-        const num_branches = 2;
-        if (num_branches === 0) {
-            return [];
-        }
-
-        const branches = new Array(num_branches);
-        const plength = parent.length, pangle = parent.angle, pwidth = parent.width;
-        const pos_x = parent.x + parent.endx, pos_y = parent.y + parent.endy;
-        const base_length = Math.min(plength, FractalTree.MAX_BRANCH_LENGTH) / 1.03;
-
-        let props = {
-            depth: depth,
-            x: pos_x,
-            y: pos_y,
-            width: 0.80 * pwidth,
-        };
-
-        const angles = [20, -20, 2.5, -2.5];
-        for (let i = 0; i < branches.length; ++i) {
-            props.angle = pangle + angles[i] + rand(delta_angle);
-            props.length = Math.max(base_length + 5 * randn_bm() / (depth + 1), 0);
-
-            let drift = Math.abs(props.angle - 180);
-            if (drift > 30) {
-                //props.length -= Math.min(rand(5, 0)/(drift+10), 1.2*props.length);
-            }
-
-            branches[i] = new Branch(parent, props);
-        }
-
-        return branches;
-    }
-
-
-    static get ROOT_LENGTH() {
-        return 350;
-    }
-
-    static get MAX_BRANCH_LENGTH() {
-        return 40;
-    }
-
-    static get ANGLE_SPREAD() {
-        return 30;
-    }
-
-    static get ROOT_MIN_WIDTH() {
-        return 15;
-    }
-
-    static get ROOT_WIDTH() {
-        return 10;
-    }
-
-    get tree() {
-        return this._tree;
-    }
-
-    get branches() {
-        return this._branches;
-    }
-
-}
-
-
-function create_tree(stage) {
-    const MAX_DEPTH = 11;
-    const canvas = stage.canvas;
-
-    let tree = new FractalTree(MAX_DEPTH, stage);
-
-    createjs.Ticker.framerate = 20;
-    createjs.Ticker.on('tick', function () {
-        stage.update();
-    }, null, false);
-
-
-    document.addEventListener('keypress', function (ev) {
-        const step = 10;
-        if (ev.key === '+') {
-            tree.scale += 0.1;
-        } else if (ev.key === '-') {
-            tree.scale = Math.max(tree.scale - 0.1, 0.05);
-        } else if (ev.key === 'a') {
-            tree.x -= step;
-        } else if (ev.key === 'd') {
-            tree.x += step;
-        } else if (ev.key === 'w') {
-            tree.y += step;
-        } else if (ev.key === 's') {
-            tree.y -= step;
-        } else if (ev.key === 'u') {
-            //tree.updateCache();
-            console.log('updated cache');
-        }
-        stage.update();
-    });
-    return tree;
-}
+})(tree);

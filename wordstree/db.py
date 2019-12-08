@@ -17,6 +17,7 @@ def init_db():
     dir = os.path.join(current_app.root_path, 'schemas')
     test_dir = os.path.join(current_app.root_path, '../tests/schemas')
 
+    # TODO: Move drop table commands to separate file that runs before all other schemas
     def run_schemas(_dir):
         # sort in case some need to run before others
         files = sorted(list(

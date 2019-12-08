@@ -8,6 +8,8 @@ create table zoom_info (
     "grid" integer not null check (grid >= 0),
     "tile_width"  real not null check (tile_width >= 0),
     "tile_height" real not null check ( tile_height >= 0),
+    "image_width" real not null check ( image_width >= 0),
+    "image_height" real not null check ( image_height >= 0),
     "imgs_path" text not null,
     "jsons_path" text not null,
     unique (zoom_level, tree_id)

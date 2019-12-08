@@ -16,8 +16,8 @@ create table branches (
 
 create table branches_ownership (
     "id" integer primary key autoincrement,
-    "branch_id" integer not null references branches("id") on delete set null,
-    "owner_id" integer not null references users("id") on delete set null,
+    "branch_id" integer not null references branches("id") on delete cascade,
+    "owner_id" integer default null references users("id") on delete set default,
     "text" text,
     "price" integer default 0,
     "available_for_purchase" boolean default 0 check ("available_for_purchase" in (0,1))

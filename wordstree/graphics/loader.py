@@ -287,12 +287,13 @@ class DBLoader(Loader):
         :param zoom_level: level of zoom
         :param grid: size of the square grid
         :param tile_size: (width, height) of the tile
+        :param img_size: (width, height) of the tile image, i.e dimensions of the image
         :param img_dir: path to the directory containing the images of the tile
         :param json_dir: path to the directory containing the JSON files that contain list of branches
             contained in a tile
         :return:
         """
-        req_args = ['tree_id', 'zoom_level', 'grid', 'tile_size', 'img_dir', 'json_dir']
+        req_args = ['tree_id', 'zoom_level', 'grid', 'tile_size', 'img_size', 'img_dir', 'json_dir']
         if not kwargs.get('tree_id', None):
             kwargs['tree_id'] = self.output_tree('tree_id')
 
@@ -304,6 +305,7 @@ class DBLoader(Loader):
         zoom_level = kwargs['zoom_level']
         grid = kwargs['grid']
         tile_width, tile_height = kwargs['tile_size']
+        img_width, img_height = kwargs['img_size']
         img_dir = kwargs['img_dir']
         json_dir = kwargs['json_dir']
 
@@ -321,10 +323,9 @@ class DBLoader(Loader):
                 cur.execute('DELETE FROM zoom_info WHERE "zoom_id"=?', [res['zoom_id']])
 
             cur.execute(
-                'INSERT INTO zoom_info (zoom_level, tree_id, grid, tile_width, tile_height, imgs_path, jsons_path) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [zoom_level, tree_id, grid, tile_width,
-                 tile_height, img_dir, json_dir]
+                'INSERT INTO zoom_info (zoom_level, tree_id, grid, tile_width, tile_height, image_width, image_height,'
+                ' imgs_path, jsons_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [zoom_level, tree_id, grid, tile_width, tile_height, img_width, img_height, img_dir, json_dir]
             )
             cur.execute('SELECT last_insert_rowid();')
             zoom_id = cur.fetchone()[0]
@@ -469,7 +470,8 @@ class DBLoader(Loader):
 
             print('Reading branches from tree \'{}\', tree_id={} ...'.format(tree_name, tree_id))
 
-            cur.execute('SELECT * FROM branches WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
+            cur.execute('SELECT * FROM branches LEFT JOIN main.branches_ownership ON '
+                        'branches.id = branches_ownership.branch_id WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
             results = cur.fetchall()
 
         num_branches = len(results)
@@ -481,8 +483,9 @@ class DBLoader(Loader):
             depth, length, width = row['depth'], row['length'], row['width']
             angle = row['angle']
             posx, posy = row['pos_x'], row['pos_y']
+            text = row['text']
 
-            branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle)
+            branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle, text=text)
             if depth > layer:
                 layers.append(i)
                 layer = depth
