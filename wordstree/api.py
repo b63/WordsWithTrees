@@ -22,6 +22,7 @@ def _to_csv(arr):
 def query_tree():
     tree_ids = request.args.getlist('id')
     keys = set(request.args.getlist('keys'))
+    queries = set(request.args.getlist('q'))
     length = len(tree_ids)
 
     db = get_db()
@@ -46,6 +47,13 @@ def query_tree():
             for key in keys:
                 dic[key] = row[key]
             rv.append(dic)
+
+    # handle queries
+    for tree_dic in rv:
+        if 'max_zoom' in queries:
+            cur.execute('SELECT tree.tree_id, COUNT(zoom_id) FROM tree JOIN zoom_info zi on tree.tree_id = zi.tree_id '
+                        'WHERE tree.tree_id=?', [tree_dic['tree_id']])
+            tree_dic['max_zoom'] = cur.fetchone()[1]
 
     response = Response(
         response=json.dumps(rv),
