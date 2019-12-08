@@ -66,11 +66,14 @@ def buy_branch():
     """purchase a branch and change the contents of a the branch"""
     db = get_db()
     buying_id = request.form["branch_id"]
+    branch_price = request.form["branch_price"]
     user_id = session['user_id']
     print(buying_id)
-    db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id,buying_id])
-    db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'],buying_id])
+    print(branch_price)
+    db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id, buying_id])
+    db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'], buying_id])
     db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
+    db.execute('UPDATE users SET token = token - ? WHERE id = ?', [branch_price, user_id])
     db.commit()
     return redirect(url_for("buy.buy_branches_get"))
 

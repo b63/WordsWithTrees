@@ -8,6 +8,7 @@ bp = Blueprint('view_inventory', __name__)
 @bp.route('/inventory')
 def view_inventory():
     """ Display user's inventory. """
+
     db = get_db()
     user_id = session['user_id']
 

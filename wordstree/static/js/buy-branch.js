@@ -8,5 +8,6 @@ $('#buyModal').on('show.bs.modal', function (event) {
   modal.find('#branch_name').text(branch_text);
   modal.find('#branch_price').text(branch_price);
   modal.find('.branch_id').val(branch_id);
+  modal.find('.branch_price').val(branch_price);
 
 })
