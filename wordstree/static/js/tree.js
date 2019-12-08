@@ -2,12 +2,27 @@ const tree = {};
 
 (function(global){
     global.tile_info_cache = {};
+    global.tree_info_cache = {};
 
     function request_zoom_info(tree_id, zoom_level) {
         let params = new URLSearchParams();
         params.append('q', `${zoom_level},${tree_id}`);
 
         return fetch('/api/zoom?' + params.toString(), {
+            method: 'GET'
+        }).then(function(response){
+            if(!response.ok || response.status !== 200)
+                throw new Error(response.statusText);
+            return response.json()
+        })
+    }
+
+    function request_tree_info(tree_id) {
+        let params = new URLSearchParams();
+        params.append('id', tree_id);
+        params.append('q', 'max_zoom');
+
+        return fetch('/api/tree?' + params.toString(), {
             method: 'GET'
         }).then(function(response){
             if(!response.ok || response.status !== 200)
@@ -43,6 +58,16 @@ const tree = {};
 
             // for animating
             this.pan = {x: 0, y: 0, dx: 0, dy: 0, mousex: 0, mousey: 0, panning: false};
+        }
+
+        init_tree_info() {
+            const _this = this;
+            request_tree_info(this.id).then(function(json){
+                for (let i = 0; i < json.length; ++i){
+                    const info = json[i];
+                    global.tree_info_cache[info['tree_id']] = info;
+                }
+            });
         }
 
         init_grid() {
@@ -81,6 +106,56 @@ const tree = {};
                 }
 
                 _this.grid = grid;
+            });
+        }
+
+        change_zoom(center_x, center_y, i) {
+            const tile_info = global.tile_info_cache[this.id][this.zoom];
+            const max_zoom = global.tree_info_cache[this.id]['max_zoom'];
+            const _this = this;
+
+            const image_width = tile_info['image_width'], image_height = tile_info['image_height'];
+            const origin_col = this.tile_origin_col, origin_row = this.tile_origin_row;
+            const grid_size = tile_info['grid'];
+
+            this.zoom = Math.min(max_zoom-1, this.zoom + i);
+            this.removeAllChildren();
+            this.init_grid().then(() => {
+                const new_tile_info = global.tile_info_cache[_this.id][_this.zoom];
+                const new_grid_size = new_tile_info['grid'];
+                const new_image_width = new_tile_info['image_width'];
+                const new_image_height = new_tile_info['image_height'];
+                const new_tile_dx = 1/new_grid_size, new_tile_dy = 1/new_grid_size;
+
+                // distance from top corner to center point
+                const dcx_norm = (center_x - _this.x)/image_width/grid_size;
+                const dcy_norm = (center_y - _this.y)/image_height/grid_size;
+
+                // find coordinates of center point
+                let cx_norm =  dcx_norm + origin_col / grid_size;
+                let cy_norm =  dcy_norm + origin_row / grid_size;
+
+                // distance to top corner to center point in units of zoomed grid
+                const dcx_norm_new = (center_x - _this.x)/new_image_width/new_grid_size;
+                const dcy_norm_new = (center_y - _this.y)/new_image_height/new_grid_size;
+
+                // coordinate of top corner
+                let x_norm = cx_norm - dcx_norm_new;
+                let y_norm = cy_norm - dcy_norm_new;
+
+                // floor to coordinate of top of a tile
+                let tile_x_norm = Math.floor(x_norm/new_tile_dx)*new_tile_dy;
+                let tile_y_norm = Math.floor(y_norm/new_tile_dy)*new_tile_dy;
+
+                _this.load_tiles(tile_x_norm, tile_y_norm).then(function(value){
+                    let shift_x = (x_norm * new_grid_size - _this.tile_origin_col) * new_image_width;
+                    let shift_y = (y_norm * new_grid_size - _this.tile_origin_row) * new_image_height;
+
+                    _this.x -= shift_x;
+                    _this.y -= shift_y;
+                    _this.stage.update();
+                });
+
             });
         }
 
@@ -158,8 +233,8 @@ const tree = {};
                                         reject();
                                     branches = json[0] || [];
                                     tile.set_tile(image, branches, tile_row, tile_col);
-                                    tile.x = j * image_width;
-                                    tile.y = i * image_height;
+                                    tile.x = (j) * image_width;
+                                    tile.y = (i) * image_height;
                                     _this.stage.update();
 
                                     finished += 1;
@@ -218,26 +293,32 @@ const tree = {};
 
                 _this.x = nx;
                 _this.y = ny;
-                _this.stage.update();
 
                 if ( pan.panning || abs_dx > min_delta || abs_dy > min_delta) {
+                    _this.stage.update();
                     requestAnimationFrame(() => inner(resolve, reject));
                 } else {
                     const tile_info = global.tile_info_cache[_this.id][_this.zoom];
                     const tile_dx = tile_info['tile_width'], tile_dy = tile_info['tile_height'];
+                    const image_width = tile_info['image_width'], image_height = tile_info['image_height'];
                     const origin_col = _this.tile_origin_col, origin_row = _this.tile_origin_row;
                     const grid_size = tile_info['grid'];
 
-                    let x_norm = -_this.x/grid_size/tile_dx + _this.tile_origin_col/grid_size  ;
-                    let y_norm = -_this.y/grid_size/tile_dy + _this.tile_origin_row/grid_size;
+                    let dcol = floor_ceil(_this.x/image_width);
+                    let drow = floor_ceil(_this.y/image_height);
+                    console.log('x,y ', _this.x,',', _this.y, '  dcol,drow ', dcol,',', drow);
+
+                    let x_norm = -dcol/grid_size + _this.tile_origin_col/grid_size  ;
+                    let y_norm = -drow/grid_size + _this.tile_origin_row/grid_size;
 
                     _this.load_tiles(x_norm, y_norm).then(function(finished){
                         const dcol = _this.tile_origin_col - origin_col;
                         const drow = _this.tile_origin_row - origin_row;
                         console.log(dcol, drow);
 
-                        _this.x += dcol * tile_dx - Math.abs(_this.x % tile_dx);
-                        _this.y += drow * tile_dy - Math.abs(_this.y % tile_dy);
+                        _this.x -= -dcol * image_width;
+                        _this.y -= -drow * image_height;
+                        console.log('pos ', _this.x, _this.y);
                         _this.stage.update();
                     });
 
@@ -249,6 +330,13 @@ const tree = {};
         } // end of animate_pan
     } // end of Tree class body
 
+    function floor_ceil(x) {
+        if (x < 0) {
+            return Math.ceil(x);
+        } else {
+            return Math.ceil(x);
+        }
+    }
 
 
     global.Tree = Tree;

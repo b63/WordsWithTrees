@@ -10,7 +10,7 @@ function create_stage(canvas) {
         const SPACING = Math.floor(Math.min(width, height) / 6) + 1;
 
         // background
-        g.beginFill('#fff').drawRect(0, 0, canvas.width, canvas.height);
+        g.beginFill('#817e7e').drawRect(0, 0, canvas.width, canvas.height);
 
         // vertical lines
         g.beginStroke('#000');
@@ -61,6 +61,7 @@ function init(e) {
     const t = new tree.Tree(3, 1, stage);
     stage.addChild(t);
 
+    t.init_tree_info();
     t.init_grid().then(value => t.load_tiles(0.5, 0.5)).then(
         function(value){
             console.log(value);
@@ -68,6 +69,19 @@ function init(e) {
             stage.update();
         }
     );
+
+    let mousepos = {x: 0, y: 0};
+    document.addEventListener('keypress', function(event){
+        const rect = canvas.getBoundingClientRect();
+        const x = mousepos.x - rect.x;
+        const y = mousepos.y - rect.y;
+
+        if (event.key === 'i') {
+            t.change_zoom(x, y, 1);
+        } else if (event.key === 'o') {
+            t.change_zoom(x, y, -1);
+        }
+    });
 
     let mousedown = false;
     canvas.addEventListener('mousedown', function(event){
@@ -84,8 +98,13 @@ function init(e) {
     });
 
     document.addEventListener('mousemove', function (event) {
-        if(!mousedown)
+        mousepos.x = event.clientX;
+        mousepos.y = event.clientY;
+
+        if(!mousedown) {
             return;
+        }
+
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.x;
         const y = event.clientY - rect.y;
