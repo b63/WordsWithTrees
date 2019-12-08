@@ -25,13 +25,16 @@
           <img src="../static/tree.png" alt="" width="250" height="250">
           <p class="h2">Buy Trees</p>
         </div>
+
         <div class="row">
+
           <div class="input-group md-form form-sm form-2 pl-0 mb-3 col-9 ml-1">
-            <form class="form-inline mr-auto">
-              <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+            <form action="{{ url_for('buy.buy_branches_search') }}" method="get" class="form-inline mr-auto">
+              <input class="form-control mr-sm-2" type="text" name="search_field" placeholder="Search" aria-label="Search">
               <button class="btn btn-outline-success btn-rounded btn-sm my-0" type="submit">Search</button>
             </form>
           </div>
+
           <div class="dropdown show col-2">
             <a class="btn btn-secondary dropdown-toggle bg-success" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Filter By:
@@ -41,6 +44,7 @@
               <a class="dropdown-item" href="?filter=price">Price</a>
             </div>
           </div>
+
         </div>
 
       </div>
@@ -49,13 +53,46 @@
         <div class="col">
           <ul class="list-group">
             {% for branch in branches %}
-            <li class="list-group-item">{{ branch.text }} <button class="btn-danger">Sell</button></li>
+            <li class="list-group-item">{{ branch.text }}
+              <span class="ml-5 mr-5">${{ branch.price }}</span>
+              <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#buyModal"
+                      data-id="{{branch.id}}" data-price="{{ branch.price}}" data-text="{{ branch.text }}">Buy!</button>
+            </li>
             {% else %}
             <li><em>Unbelievable. There are no available branches to purchase </em></li>
             {% endfor %}
           </ul>
         </div>
       </div>
+
+      <!-- Modal from https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
+      <div id="buyModal" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4>Buy Branch</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+              </div>
+              <form action="{{ url_for('buy.buy_branch') }}" method="post" class="form-signin needs-validation" novalidate="">
+                <div class="modal-body">
+                  <p id="branch_name">Branch name</p>
+                  <p> <span>$ </span><span id="branch_price">price</span></p>
+                  <textarea maxlength="35" name="new-bt">
+                  </textarea>
+                  <div class="invalid-feedback">
+                    Your message is too long
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <input type="hidden" name="branch_id" class="branch_id">
+                  <input type="submit" class="btn btn-default" id='submit-button' value="submit">
+                </div>
+              </form>
+            </div>
+          </div>
+      </div>
+
     </div>
     <a href="{{ url_for('root.home')}}">
       <button class="btn btn-outline-success buy-btn">Inventory</button>
@@ -71,4 +108,5 @@
 <script src="{{ url_for('static', filename='js/branch.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tree.js') }}"></script>
 <script src="{{ url_for('static', filename='js/init.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buy-branch.js') }}"></script>
 {% endblock %}
