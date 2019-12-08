@@ -15,6 +15,11 @@ def register_user(name, username, password):
     assert user_content['username'] == username
     assert check_password_hash(user_content['hash_password'], password)
 
+    cur.execute('SELECT last_insert_rowid();')
+    user_id = cur.fetchone()[0]
+
+    return user_id
+
 
 def test_login(client, app):
     """testing logging in with predetermined credentials"""
@@ -23,13 +28,13 @@ def test_login(client, app):
         assert client.get('/login').status_code == 200
         # registering a user and checking if their session is active
         name, username, password = 'test', 'testy', 'qwertY123'
-        register_user(name, username, password)
+        user_id = register_user(name, username, password)
         rv = client.post('/login', data={
             'username': username,
             'password': password}, follow_redirects=True)
         with client:
             client.get('/')
-            assert session['user_id'] == 1
+            assert session['user_id'] == user_id
 
 
 
