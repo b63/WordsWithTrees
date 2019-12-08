@@ -42,15 +42,16 @@ def test_buy_branches(client, app):
         insert_branch(app, "Branch 2", 1, 2, 2, 1)
         cur = db.execute('SELECT branch_id FROM branches_ownership WHERE text="Branch 1"')
         branch_id = cur.fetchone()
-        print(type(branch_id["branch_id"]))
         rv = client.post('/buy/branch', data={
             'new-bt': 'new Branch',
-            'branch_id': branch_id["branch_id"]
+            'branch_id': branch_id["branch_id"],
+            'branch_price': 10
         }, follow_redirects=True)
-
-        rv.data
 
         cur = db.execute('SELECT text FROM branches_ownership WHERE owner_id=1')
         branch = cur.fetchone()
 
+        cur = db.execute('SELECT token FROM users WHERE id=1')
+        user = cur.fetchone()
         assert branch["text"] == "new Branch"
+        assert user["token"] == 90

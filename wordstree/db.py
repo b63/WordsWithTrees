@@ -11,7 +11,7 @@ def init_app(app):
     app.cli.add_command(initdb_command)
 
 
-def init_db():
+def init_db(exclude=[]):
     """Initializes the database."""
     db = get_db()
     dir = os.path.join(current_app.root_path, 'schemas')
@@ -29,6 +29,9 @@ def init_db():
 
         print('Reading schemas from {} ...'.format(_dir))
         for file in files:
+            if file in exclude:
+                continue
+
             print('    reading {}'.format(file))
             with open(os.path.join(_dir, file), mode='r') as f:
                 db.cursor().executescript(f.read())

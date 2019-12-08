@@ -8,14 +8,18 @@ bp = Blueprint('view_inventory', __name__)
 @bp.route('/inventory')
 def view_inventory():
     """ Display user's inventory. """
+
     db = get_db()
     user_id = session['user_id']
 
-    cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id = b.id'
+    cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b ON branches_ownership.branch_id = b.id'
                      ' WHERE owner_id = ? AND available_for_purchase = 0', [user_id])
     branches = cur.fetchall()
 
-    return render_template("view_inventory.html", branches=branches)
+    cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
+    user = cur.fetchone()
+
+    return render_template("view_inventory.html", branches=branches, user=user)
 
 
 

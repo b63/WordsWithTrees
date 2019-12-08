@@ -43,12 +43,15 @@ def signup_as_post():
 
     db.commit()
     # store their id in session to log them in automatically
-    cur = db.execute("SELECT id FROM users WHERE username=(?)",
+    cur = db.execute("SELECT * FROM users WHERE username=(?)",
                      [request.form.get("username")])
-    user_id = cur.fetchone()
+    user_data = cur.fetchone()
 
     # automatically log in user and redirect to user's marketplace
-    session['user_id'] = user_id['id']
+    session['user_id'] = user_data['id']
+    session["name"] = user_data["name"]
+    session["token"] = user_data["token"]
+
     return redirect(url_for("view_inventory.view_inventory"))
 
 

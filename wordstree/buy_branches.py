@@ -27,6 +27,8 @@ def buy_branches_get():
     """get all the branches that belong to the given user"""
     db = get_db()
 
+    user_id = session['user_id']
+
     # Filter view if category specified in query string
     if "filter" in request.args:
         if request.args["filter"] == "visibility":
@@ -42,7 +44,10 @@ def buy_branches_get():
                          '= b.id WHERE available_for_purchase=1 ORDER BY b.id DESC')
         available_branches = cur.fetchall()
 
-    return render_template('buy_branch.html', branches=available_branches)
+    cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
+    user = cur.fetchone()
+
+    return render_template('buy_branch.html', branches=available_branches, user=user)
 
 
 @bp.route('/buy/search', methods=['GET'])
@@ -61,11 +66,14 @@ def buy_branch():
     """purchase a branch and change the contents of a the branch"""
     db = get_db()
     buying_id = request.form["branch_id"]
+    branch_price = request.form["branch_price"]
     user_id = session['user_id']
     print(buying_id)
-    db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id,buying_id])
-    db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'],buying_id])
+    print(branch_price)
+    db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id, buying_id])
+    db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'], buying_id])
     db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
+    db.execute('UPDATE users SET token = token - ? WHERE id = ?', [branch_price, user_id])
     db.commit()
     return redirect(url_for("buy.buy_branches_get"))
 

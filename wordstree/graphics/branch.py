@@ -20,6 +20,7 @@ class Branch(JSONifiable):
         self.__length = kwargs.get('length', Branch.DEFAULT_LENGTH)
         self.__width = kwargs.get('width', Branch.DEFAULT_WIDTH)
         self.__angle = kwargs.get('angle', Branch.DEFAULT_ANGLE)
+        self.__text = kwargs.get('text', '')
 
         x, y = self.__pos.x, self.__pos.y
         top_left = translate_point_along_line(x, y, -self.__width/2, self.__angle + HALF_PI)
@@ -45,6 +46,8 @@ class Branch(JSONifiable):
     def draw(self, ctx: cairo.Context, **kwargs):
         layer = kwargs.get('layer', 0)
         opacity = kwargs.get('opacity', 1.0)
+        debug = kwargs.get('debug', False)
+
         ctx.save()
         pos, angle, width, length = self.pos, self.angle, self.width, self.length
 
@@ -61,17 +64,34 @@ class Branch(JSONifiable):
         ctx.fill()
         ctx.restore()
 
-        # draw label
-        label = '{:d}'.format(self.index)
-        ctx.set_source_rgba(1, 0, 0, opacity)
-        ctx.set_font_size(width*0.1)
-        extents = ctx.text_extents(label)
+        if debug:
+            # draw label
+            label = '{:d}'.format(self.index)
+            ctx.save()
+            ctx.set_source_rgba(1, 0, 0, opacity)
+            ctx.set_font_size(width*0.1)
+            extents = ctx.text_extents(label)
 
-        ctx.rotate(angle)
-        ctx.translate(length/2-extents.width/2, 0)
-        ctx.rotate(-angle)
+            ctx.rotate(angle)
+            ctx.translate(length/2-extents.width/2, 0)
+            ctx.rotate(-angle)
 
-        ctx.show_text('{:d}'.format(self.index))
+            ctx.show_text(label)
+            ctx.restore()
+
+        msg = '{}'.format(self.text)
+        if msg:
+            # draw message
+            ctx.save()
+            ctx.set_source_rgba(1, 1, 1, opacity)
+            ctx.set_font_size(width*0.6)
+            extents = ctx.text_extents(msg)
+
+            ctx.rotate(angle)
+            ctx.translate(length/2-extents.width/2, width/2 - extents.height/2)
+
+            ctx.show_text(msg)
+            ctx.restore()
 
         # draw point
         # ctx.rotate(-angle)
@@ -79,6 +99,7 @@ class Branch(JSONifiable):
         # ctx.set_source_rgb(0, 1, 0)
         # ctx.fill()
 
+        # restore out of branch coordinates
         ctx.restore()
 
     @property
@@ -92,6 +113,13 @@ class Branch(JSONifiable):
     @property
     def pos(self):
         return self.__pos
+
+    @property
+    def text(self):
+        if self.__text is None:
+            return ''
+        else:
+            return self.__text
 
     @property
     def depth(self):
