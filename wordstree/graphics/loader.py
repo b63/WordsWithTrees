@@ -470,7 +470,8 @@ class DBLoader(Loader):
 
             print('Reading branches from tree \'{}\', tree_id={} ...'.format(tree_name, tree_id))
 
-            cur.execute('SELECT * FROM branches WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
+            cur.execute('SELECT * FROM branches LEFT JOIN main.branches_ownership ON '
+                        'branches.id = branches_ownership.branch_id WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
             results = cur.fetchall()
 
         num_branches = len(results)
@@ -482,8 +483,9 @@ class DBLoader(Loader):
             depth, length, width = row['depth'], row['length'], row['width']
             angle = row['angle']
             posx, posy = row['pos_x'], row['pos_y']
+            text = row['text']
 
-            branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle)
+            branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle, text=text)
             if depth > layer:
                 layers.append(i)
                 layer = depth
