@@ -18,11 +18,12 @@ def app():
         'CACHE_DIR': cache_path,
         'IMAGE_DIR': os.path.join(cache_path, 'images'),
         'TEST_TREE_ID': 1938,  # tree has of branches
-        'DUMMY_TEST_TREE_ID': 1945  # tree has no branches
+        'DUMMY_TEST_TREE_ID': 1945,  # tree has no branches
+        'DUMMY_USER_ID': 2099  # tree has no branches
     })
 
     with app.app_context():
-        init_db(exclude=['999-dummy.sql'])
+        init_db(exclude=['70-dummy.sql'])
     yield app
 
     os.close(db_file)

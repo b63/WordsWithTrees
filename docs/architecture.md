@@ -15,7 +15,7 @@
 │   └── home.html
 ├── app_tests.py
 ├── users.db
-├── 90-schema.sql
+├── 50-schema.sql
 ├── docs
 │   ├── README.md
 │   ├── architecture.md

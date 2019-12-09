@@ -334,7 +334,7 @@ class DBLoader(Loader):
                                 )
                     updated += 1
 
-            print('  branches table: updated {} entries, inserted {} new branch entries'.format(updated, inserted))
+            print('  branches table: updated {}, inserted {}'.format(updated, inserted))
 
             print('\nUpdating branches_ownership entries  ...')
             updated, inserted = 0, 0
@@ -354,7 +354,7 @@ class DBLoader(Loader):
                                  branch_id]
                                 )
                     updated += 1
-            print('  branches_ownership table: updated {} entries, inserted {} new entries'.format(updated, inserted))
+            print('  branches_ownership table: updated {}, inserted {}'.format(updated, inserted))
             db.commit()
 
     def save_branches(self, **kwargs):
@@ -442,23 +442,28 @@ class DBLoader(Loader):
                         'branches.id = branches_ownership.branch_id WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
             results = cur.fetchall()
 
-        num_branches = len(results)
-        branches = [None for i in range(num_branches)]
+        if results is None or len(results) == 0:
+            num_branches = 0
+            branches = []
+            layers = []
+        else:
+            num_branches = len(results)
+            branches = [None for i in range(num_branches)]
 
-        layers, layer = [], -1
-        for i in range(num_branches):
-            row = results[i]
-            depth, length, width = row['depth'], row['length'], row['width']
-            angle = row['angle']
-            posx, posy = row['pos_x'], row['pos_y']
-            text = row['text']
+            layers, layer = [], -1
+            for i in range(num_branches):
+                row = results[i]
+                depth, length, width = row['depth'], row['length'], row['width']
+                angle = row['angle']
+                posx, posy = row['pos_x'], row['pos_y']
+                text = row['text']
 
-            branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle, text=text)
-            if depth > layer:
-                layers.append(i)
-                layer = depth
-            elif depth < layer:
-                raise Exception('branches not in order')
+                branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle, text=text)
+                if depth > layer:
+                    layers.append(i)
+                    layer = depth
+                elif depth < layer:
+                    raise Exception('branches not in order')
 
         print('  branches read: {}\n  layers: {}'.format(num_branches, str(layers).strip('[]')))
 

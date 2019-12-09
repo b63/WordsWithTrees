@@ -5,10 +5,12 @@ import os
 
 from wordstree.graphics.loader import Loader, FileLoader, DBLoader
 from wordstree.graphics.render import Renderer
+from .generate import generate_layer
 
 
 def init_app(app):
     app.cli.add_command(render_tree)
+    app.cli.add_command(add_layer)
 
 
 def parse_range_list(string: str, max: int = 0, min: int = 0):
@@ -38,7 +40,7 @@ def parse_range_list(string: str, max: int = 0, min: int = 0):
 
             if index >= 0:
                 # parse range (0-9, 1-2, etc...)
-                begin, end = item[:index], item[index+1:]
+                begin, end = item[:index], item[index + 1:]
                 if not begin and not end:
                     raise click.BadParameter('range \'{}\' not valid'.format(item))
 
@@ -49,7 +51,7 @@ def parse_range_list(string: str, max: int = 0, min: int = 0):
                     raise click.BadParameter('\'{}\' range must be in the range {}-{}'
                                              .format(item, min, max))
 
-                for i in range(begin, end+1):
+                for i in range(begin, end + 1):
                     levels.add(i)
             else:
                 level = int(item)
@@ -65,6 +67,7 @@ def parse_range_list(string: str, max: int = 0, min: int = 0):
 def validate_zoom(ctx, param, value):
     parse_range_list(value, min=0, max=100)
     return value
+
 
 # null character at the end of help messages as a temporary way to get new lines...
 @click.command('render')
@@ -183,6 +186,7 @@ def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree
         if cache_tiles:
             ren.cache_tiles(zoom=level, saver=saver, saver_args=save_kwargs)
 
+
 # feature list:
 #   add commmand - add layers to a tree
 @click.command('add-layer')
@@ -203,19 +207,32 @@ def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree
                    'Note: If this option is not specified, no entry will be added to "branches_ownership" table even '
                    'if values for other columns are specified.\n\0'
               )
-@click.option('--price', 'price', default=None,
+@click.option('--price', 'price', default=0,
               help='Value to set for "price" column of each new entry added to "branches_ownership" table for each new '
-                   'entry added to "branches" table.\n\0'
+                   'entry added to "branches" table. Defaults to 0.\n\0'
               )
 @click.option('--purchase', 'purchase', default=False,
               help='Value for "available_for_purchase" column for entries added to "branches_ownership" table. '
                    'Defaults to False.\n\0'
               )
-@click.option('--text', 'purchase', defeault='',
+@click.option('--text', 'text', default='',
               help='Value for "text" column for entries added to "branches_ownership" table. '
                    'Defaults to empty string \'\'.\n\0'
               )
-def add_layer(input_str, num_layers, owner_id, price, purchase, text):
+@with_appcontext
+def add_layer(input_str, num_layers=1, owner_id=None, price=0, purchase=False, text=''):
+    """
+    Add layers of branches to an existing tree in database.
+
+    :param input_str: `db:<tree-id>` where `<tree-id>` is the id of the entry in the `tree` table
+    :param num_layers: number of layers of branches to add to the `branches` table under the given tree-id
+    :param owner_id: if not `None`, entries are also added to the `branches_ownership` table with the given `owner_id`
+        column value. Other column values must be specified if this argument is not `None`. See :param:`price`,
+        :param:`purchase`, and :param:`text`.
+    :param price: value for the `price` column
+    :param purchase: value for the `purchase` column
+    :param text: value for the `text` column
+    """
     input_str = input_str.strip()
 
     # load branches
@@ -227,11 +244,44 @@ def add_layer(input_str, num_layers, owner_id, price, purchase, text):
     if not tree_id:
         raise click.BadParameter('bad value \'{}\''.format(input_str))
 
-    loader = DBLoader(current_app)
-
     try:
+        # load branches from database
+        loader = DBLoader(current_app)
         loader.load_branches(tree_id=int(tree_id))
     except Exception as e:
         raise click.BadParameter(str(e))
-    
 
+    if len(loader.layers) == 0:
+        depth, begin = 0, 0
+    else:
+        depth = len(loader.layers)
+        begin = loader.layers[-1]
+    # generate next layer using branches from loader.branches
+    branches, num_branches = generate_layer(loader.branches, depth, begin,
+                                            loader.num_branches)
+
+    # generate the rest from the newly generated layers
+    begin = 0
+    for i in range(1, num_layers):
+        depth += 1
+        new_branches, added_branches = generate_layer(branches, depth, begin)
+        begin = num_branches
+        num_branches += added_branches
+        branches.extend(new_branches)
+
+    # create owner_info for each of the new branches
+    owner_info = dict()
+    if owner_id:
+        info = {
+            'owner_id': owner_id,
+            'price': price,
+            'available_for_purchase': purchase,
+            'text': text
+        }
+
+        for i in range(num_branches):
+            branch = branches[i]
+            owner_info[branch.index] = info
+
+    # update database
+    loader.update_branches(tree_id, branches=branches, num_branches=len(branches), ownership_info=owner_info)

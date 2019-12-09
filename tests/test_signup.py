@@ -6,31 +6,37 @@ from flask import current_app
 from wordstree.db import init_db, get_db
 from werkzeug.security import check_password_hash
 
-'''adding new account to the database through a post request and checking if info was added in the database correctly'''
 
 def testing_signup(client, app):
+    """
+    Adding new account to the database through a post request and checking if info was added in the database correctly
+    """
     with app.app_context():
-        rv = client.post('/signup', data = {
-            'name':'Person',
-            'username': 'nick',
-            'password':'qwertY123',
-            'password-confirm': 'qwertY123'}, follow_redirects = True)
-
         db = get_db()
-        cur = db.execute('SELECT name, username, hash_password FROM users')
+        cur = db.cursor()
+        rv = client.post('/signup', data={
+            'name': 'Person',
+            'username': 'nick',
+            'password': 'qwertY123',
+            'password-confirm': 'qwertY123'}, follow_redirects=True)
+
+        cur.execute('SELECT id FROM users WHERE username=?', ['nick'])
+        user_id = cur.fetchone()[0]
+
+        cur = db.execute('SELECT id, name, username, hash_password FROM users WHERE id=?', [user_id])
         user_content = cur.fetchone()
 
         assert user_content['name'] == 'Person'
         assert user_content['username'] == 'nick'
         assert check_password_hash(user_content['hash_password'], 'qwertY123')
 
-''''''
+
 def test_flash_messages(client):
     # testing name
     rv = client.post('/signup', data={
         'username': 'nick',
         'password': 'qwertY123',
-        'password-confirm': 'qwertY123'}, follow_redirects = True)
+        'password-confirm': 'qwertY123'}, follow_redirects=True)
     cur = rv.data
     assert b'You must provide a name' in cur
 
@@ -38,7 +44,7 @@ def test_flash_messages(client):
     rv = client.post('/signup', data={
         'name': 'Person',
         'password': 'qwertY123',
-        'password-confirm': 'qwertY123'},follow_redirects = True )
+        'password-confirm': 'qwertY123'}, follow_redirects=True)
     cur = rv.data
     assert b'You must provide a username' in cur
 
@@ -46,7 +52,7 @@ def test_flash_messages(client):
     rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
-        'password-confirm': 'qwertY123'}, follow_redirects = True)
+        'password-confirm': 'qwertY123'}, follow_redirects=True)
     cur = rv.data
     assert b'You must provide a password' in cur
 
@@ -54,7 +60,7 @@ def test_flash_messages(client):
     rv = client.post('/signup', data={
         'name': 'Person',
         'username': 'nick',
-        'password': 'qwertY123'}, follow_redirects = True)
+        'password': 'qwertY123'}, follow_redirects=True)
     cur = rv.data
     assert b'You must provide a password confirmation' in cur
 
@@ -63,19 +69,9 @@ def test_flash_messages(client):
         'name': 'Person',
         'username': 'nick',
         'password': 'qwertY123',
-        'password-confirm': 'qwertY124'}, follow_redirects = True)
+        'password-confirm': 'qwertY124'}, follow_redirects=True)
     cur = rv.data
     assert b'Your passwords must match' in cur
-
-
-
-
-
-
-
-
-
-
 
 
 '''testing deletion of a post with a given id and checking for the right change in the 

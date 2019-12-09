@@ -5,18 +5,19 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 def register_user(name, username, password):
     db = get_db()
-    password = password
-    hash_password = generate_password_hash(password)
-    db.execute("INSERT INTO users (name, username, hash_password) VALUES (?, ?, ?)",
-                [name, username, hash_password])
-    cur = db.execute('SELECT name, username, hash_password FROM users')
-    user_content = cur.fetchone()
-    assert user_content['name'] == name
-    assert user_content['username'] == username
-    assert check_password_hash(user_content['hash_password'], password)
+    cur = db.cursor()
 
+    hash_password = generate_password_hash(password)
+    cur.execute("INSERT INTO users (name, username, hash_password) VALUES (?, ?, ?)",
+               [name, username, hash_password])
     cur.execute('SELECT last_insert_rowid();')
     user_id = cur.fetchone()[0]
+
+    cur.execute('SELECT id, name, username, hash_password FROM users WHERE id=?', [user_id])
+    row = cur.fetchone()
+    assert row['name'] == name
+    assert row['username'] == username
+    assert check_password_hash(row['hash_password'], password)
 
     return user_id
 
@@ -35,8 +36,3 @@ def test_login(client, app):
         with client:
             client.get('/')
             assert session['user_id'] == user_id
-
-
-
-
-

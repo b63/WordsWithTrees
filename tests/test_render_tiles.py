@@ -1,4 +1,5 @@
 import os
+import traceback
 import json
 
 from flask import Flask
@@ -92,3 +93,50 @@ def test_branch_grid_intersection(app: Flask):
                 success += 1
 
     assert success == total
+
+
+def test_add_layer(app: Flask):
+    """
+    Tests `add-layer` cli command.
+    """
+    runner = app.test_cli_runner()
+
+    # dummy tree should have no branches
+    tree_id = app.config['DUMMY_TEST_TREE_ID']
+
+    result = runner.invoke(args=['add-layer', '-f', 'db:{}'.format(tree_id), '-n', '1'])
+    assert result.exception is None
+
+    with app.app_context():
+        db = get_db()
+        cur = db.cursor()
+        cur.execute('SELECT * FROM branches  WHERE tree_id=?', [tree_id])
+        res = cur.fetchall()
+
+        # there should only be the root branch
+        assert len(res) == 1
+        row = res[0]
+        assert row['depth'] == 0
+
+    # test if entries are added to branches_ownership
+    dummy_id = app.config['DUMMY_USER_ID']
+    result = runner.invoke(args=['add-layer', '-f', 'db:{}'.format(tree_id), '-n', 2, '--owner-id', dummy_id])
+    assert result.exception is None
+
+    with app.app_context():
+        db = get_db()
+        cur = db.cursor()
+        cur.execute('SELECT DISTINCT depth, tree_id FROM branches  WHERE tree_id=?', [tree_id])
+        res = cur.fetchall()
+
+        # there should be 3 layers now
+        assert len(res) == 3
+
+        # number of new branches added
+        cur.execute('SELECT * FROM branches WHERE tree_id=? AND depth > 0', [tree_id])
+        num_branches = len(cur.fetchall())
+
+        # all of them should have corresponding entries in branches_ownership with owner_id of dummy_id
+        cur.execute('SELECT * FROM branches INNER JOIN branches_ownership bo on branches.id = bo.branch_id '
+                    'WHERE bo.owner_id=?', [dummy_id])
+        assert num_branches == len(cur.fetchall())
