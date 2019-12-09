@@ -1,6 +1,6 @@
 import math
 import cairo
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 import json
 
 from wordstree.graphics import HALF_PI
@@ -79,18 +79,35 @@ class Branch(JSONifiable):
             ctx.show_text(label)
             ctx.restore()
 
-        msg = '{}'.format(self.text)
+        msg = '{}'.format(' '.join(self.text.upper()))
+        filler = '—  '
         if msg:
             # draw message
             ctx.save()
-            ctx.set_source_rgba(1, 1, 1, opacity)
-            ctx.set_font_size(width*0.6)
-            extents = ctx.text_extents(msg)
+            ctx.set_font_size(width*0.9)
+            ctx.set_line_width(0.0002)
+            ctx.select_font_face('Impact', cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+
+            msg_extents = ctx.text_extents(msg)
+            filler_extents = ctx.text_extents(filler)
+            num_fillers = math.floor((length-msg_extents.width)/filler_extents.x_advance/2)-2
+
+            full_msg = '{}    {}    {}'.format(filler*num_fillers, msg, filler*num_fillers)
+            extents = ctx.text_extents(full_msg)
 
             ctx.rotate(angle)
-            ctx.translate(length/2-extents.width/2, width/2 - extents.height/2)
+            ctx.translate(length/2-extents.width/2, extents.height/2)
 
-            ctx.show_text(msg)
+            ctx.set_source_rgba(1, 1, 1, opacity)
+            ctx.text_path(full_msg)
+            ctx.fill()
+            ctx.stroke()
+
+            # give border
+            ctx.set_source_rgba(0, 0, 0, opacity)
+            ctx.text_path(full_msg)
+            ctx.stroke()
+
             ctx.restore()
 
         # draw point
@@ -156,10 +173,28 @@ class Branch(JSONifiable):
         return json.dumps(dic)
 
 
-def _get_branch_color(branch: Branch) -> Tuple[float, float, float]:
-    depth = branch.depth
-    red = min(2 * depth + 50, 160)
-    green = min(1.7 * depth * depth + 50, 255)
-    blue = min(14 * depth + 50, 125)
+def _interpolate(start: List, end: List, r) -> List:
+    dim = len(start)
+    point = [start[i] for i in range(dim)]
+    # camp r between 0 and 1
+    r = max(0, min(r, 1))
 
-    return red / 255.0, green / 255.0, blue / 255.0
+    for i in range(dim):
+        s = start[i]
+        dist = end[i] - start[i]
+        point[i] += dist * r
+
+    return point
+
+
+def _get_branch_color(branch: Branch) -> List[float]:
+    brown = [83/255.0, 49/255.0, 24/255.0]
+    green = [0, 1, 0]
+    depth = branch.depth
+    # stem, brown color
+    if depth == 0:
+        return brown
+
+    return _interpolate(brown, green, depth/15)
+
+
