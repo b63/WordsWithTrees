@@ -90,12 +90,12 @@ def validate_zoom(ctx, param, value):
                    'See help on \'--from\' for help on other possible values.\n\0'
               )
 @click.option('--cache-tiles/--no-cache-tiles', 'cache_tiles', is_flag=True, default=True,
-              help='whether to render and write PNGs of tiles to disk, by default the tiles will be rendered'
+              help='whether to render and write PNGs of tiles to disk, by default the tiles will be rendered\n\0'
               )
 @click.option('--name', 'tree_name', default=None,
               help='Name of the tree; rendered images / json files will be stored in the directory of the same name '
                    'under the cache directory. If not provided, a default one will be generated if a new tree is being'
-                   'generated.'
+                   'generated.\n\0'
               )
 @with_appcontext
 def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree_name):
@@ -182,4 +182,56 @@ def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree
         ren.save_full_tree(zoom=level, saver=saver)
         if cache_tiles:
             ren.cache_tiles(zoom=level, saver=saver, saver_args=save_kwargs)
+
+# feature list:
+#   add commmand - add layers to a tree
+@click.command('add-layer')
+@click.option('-f', '--from', 'input_str', type=str, default='',
+              help='Specifies where existing branches to which to add new layers to are stored;'
+                   'Values can be: \n'
+                   '   \'db:<tree-id>\' where <tree-id> is the id of the tree where branches should be read from.'
+                   '\n\0'
+              )
+@click.option('-n', '--layers', 'num_layers', type=int, default=1,
+              help='Number of layers of branches to add (or remove if negative), if value is not specified defaults '
+                   'to 1.\n\0'
+              )
+@click.option('--owner-id', 'owner_id', default=None,
+              help='If not specified, no entry is added to "branches_ownership" table. If specified, adds an entry to '
+                   '"branches_ownership" table for each new entry inserted to "branches" table with the given '
+                   'owner-id. Other column values can be specified by with "--price", "--purchase", and "--text".\n'
+                   'Note: If this option is not specified, no entry will be added to "branches_ownership" table even '
+                   'if values for other columns are specified.\n\0'
+              )
+@click.option('--price', 'price', default=None,
+              help='Value to set for "price" column of each new entry added to "branches_ownership" table for each new '
+                   'entry added to "branches" table.\n\0'
+              )
+@click.option('--purchase', 'purchase', default=False,
+              help='Value for "available_for_purchase" column for entries added to "branches_ownership" table. '
+                   'Defaults to False.\n\0'
+              )
+@click.option('--text', 'purchase', defeault='',
+              help='Value for "text" column for entries added to "branches_ownership" table. '
+                   'Defaults to empty string \'\'.\n\0'
+              )
+def add_layer(input_str, num_layers, owner_id, price, purchase, text):
+    input_str = input_str.strip()
+
+    # load branches
+    if input_str.startswith('db:'):
+        tree_id = input_str[3:]
+    else:
+        tree_id = None
+
+    if not tree_id:
+        raise click.BadParameter('bad value \'{}\''.format(input_str))
+
+    loader = DBLoader(current_app)
+
+    try:
+        loader.load_branches(tree_id=int(tree_id))
+    except Exception as e:
+        raise click.BadParameter(str(e))
+    
 
