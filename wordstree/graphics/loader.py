@@ -389,6 +389,57 @@ class DBLoader(Loader):
 
             db.commit()
 
+    def update_branches(self, tree_id, **kwargs):
+        """
+        Update branch entries with tree-id `tree-id` with information in contained is the list of :class:`Branch`
+        objects in `branches`. If entries have same index (i.e `ind` column value same as :meth:`Branch.index`), then
+        the entry will be updated. If such an entry does not exist, it will be inserted.
+
+        :param tree_id: id of entry in the `tree` table
+        :param branches: list of :class:`Branch` objects to insert into or update in the `branches` table
+        :param num_branches: number of :class:`Branch` objects containing in the `branches` list; if not provided,
+            defaults to `len(branches)`
+        :param kwargs: additional options
+        :return:
+        """
+        # use self.branches if branches kwarg not provided
+        branches, num_branches = kwargs.get('branches', None), kwargs.get('num_branches', None)
+        if branches is None:
+            branches = self.branches
+            num_branches = self.num_branches
+        elif not num_branches:
+            num_branches = len(branches)
+
+        with self.app.app_context():
+            db = get_db()
+            cur = db.cursor()
+
+            cur.execute('SELECT tree_id FROM tree WHERE tree_id=?', [tree_id])
+            res = cur.fetchone()
+            if res is None:
+                raise Exception('entry with tree-id \'{}\' does not exist'.format(tree_id))
+
+            print('\nUpdating branches with tree-id \'{}\' ...'.format(tree_id))
+            updated, inserted = 0, 0
+            for i in range(num_branches):
+                branch = branches[i]
+                index = branch.index
+                cur.execute('SELECT * FROM branches WHERE tree_id=? AND "ind"=?', [tree_id, index])
+                row = cur.fetchone()
+                if row is not None:
+                    cur.execute('UPDATE branches SET "depth"=?, "length"=?, "width"=?, "angle"=?, "pos_x"=?, "pos_y"=? '
+                                ' WHERE tree_id=? AND "ind"=?', [tree_id, index])
+                    updated += 1
+                else:
+                    cur.execute('INSERT INTO branches (tree_id, ind, depth, length, width, angle, pos_x, pos_y) '
+                                'VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+                                [tree_id, index, branch.depth, branch.length, branch.width, branch.angle, branch.pos.x,
+                                 branch.pos.y])
+                    inserted += 1
+            db.commit()
+            print('  updated {} entries, inserted {} new branch entries'.format(updated, inserted))
+
+
     def save_branches(self, **kwargs):
         tree_id = kwargs.get('tree_id', None)
         full_width = kwargs.get('width', 0)

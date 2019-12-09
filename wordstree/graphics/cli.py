@@ -182,3 +182,4 @@ def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree
         ren.save_full_tree(zoom=level, saver=saver)
         if cache_tiles:
             ren.cache_tiles(zoom=level, saver=saver, saver_args=save_kwargs)
+
