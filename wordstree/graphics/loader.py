@@ -291,7 +291,16 @@ class DBLoader(Loader):
             defaults to `len(branches)`
         :param ownership_info: map of branch-id and dictionary pairs where the dictionary maps all the columns in
             `branches_ownership` table to values for that column. Note that the dictionary that each branch-id maps to
-            must provide values for ALL the following columns: `owner_id`, `text`, `price`, `available_for_purchase`.
+            must provide values for the following columns, unless defaults are given:
+                ======================== ======= ===============
+                Column Name              Type      Default
+                ======================== ======= ===============
+                `owner_id`               `int`
+                `text`                   `str`   ``
+                `price`                  `int`   `0`
+                `available_for_purchase` `bool`  `False`
+                `available_for_bid`      `bool`  `True`
+
         :param kwargs: additional options
         :return:
         """
@@ -338,20 +347,27 @@ class DBLoader(Loader):
 
             print('\nUpdating branches_ownership entries  ...')
             updated, inserted = 0, 0
+
             for branch_id, info in ownership_info.items():
+
                 cur.execute('SELECT * FROM branches_ownership WHERE branch_id=?', [branch_id])
                 row = cur.fetchone()
+
+                owner_id = info['owner_id']
+                text = info.get('text', '')
+                price = info.get('price', 0)
+                available_for_purchase = 1 if info.get('available_for_purchase', None) else 0
+                available_for_bid = 1 if info.get('available_for_bid', None) else 0
+
                 if row is None:
                     cur.execute('INSERT INTO branches_ownership (branch_id, owner_id, text, price, '
-                                'available_for_purchase) VALUES (?, ?, ?, ?, ?);',
-                                [branch_id, info['owner_id'], info['text'], info['price'],
-                                 info['available_for_purchase']])
+                                'available_for_purchase, available_for_bid) VALUES (?, ?, ?, ?, ?, ?);',
+                                [branch_id, owner_id, text, price, available_for_purchase, available_for_bid])
                     inserted += 1
                 else:
-                    cur.execute('UPDATE branches_ownership SET owner_id=?, text=?, price=?, available_for_purchase=? '
-                                'WHERE branch_id=?',
-                                [info['owner_id'], info['text'], info['price'], info['available_for_purchase'],
-                                 branch_id]
+                    cur.execute('UPDATE branches_ownership SET owner_id=?, text=?, price=?, available_for_purchase=?,'
+                                'available_for_bid=? WHERE branch_id=?',
+                                [owner_id, text, price, available_for_purchase, available_for_bid, branch_id]
                                 )
                     updated += 1
             print('  branches_ownership table: updated {}, inserted {}'.format(updated, inserted))

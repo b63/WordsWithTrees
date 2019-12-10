@@ -214,12 +214,16 @@ def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree
               help='Value for "available_for_purchase" column for entries added to "branches_ownership" table. '
                    'Defaults to False.\n\0'
               )
+@click.option('--bid', 'bid', default=True,
+              help='Value for "available_for_bid" column for entries added to "branches_ownership" table. '
+                   'Defaults to True.\n\0'
+              )
 @click.option('--text', 'text', default='',
               help='Value for "text" column for entries added to "branches_ownership" table. '
                    'Defaults to empty string \'\'.\n\0'
               )
 @with_appcontext
-def add_layer(input_str, num_layers=1, owner_id=None, price=0, purchase=False, text=''):
+def add_layer(input_str, num_layers=1, owner_id=None, price=0, purchase=False, bid=True, text=''):
     """
     Add layers of branches to an existing tree in database.
 
@@ -229,7 +233,8 @@ def add_layer(input_str, num_layers=1, owner_id=None, price=0, purchase=False, t
         column value. Other column values must be specified if this argument is not `None`. See :param:`price`,
         :param:`purchase`, and :param:`text`.
     :param price: value for the `price` column
-    :param purchase: value for the `purchase` column
+    :param purchase: value for the `available_for_purchase` column
+    :param bid: value for the `available_for_bid` column
     :param text: value for the `text` column
     """
     input_str = input_str.strip()
@@ -275,6 +280,7 @@ def add_layer(input_str, num_layers=1, owner_id=None, price=0, purchase=False, t
             'owner_id': owner_id,
             'price': price,
             'available_for_purchase': purchase,
+            'available_for_bid': bid,
             'text': text
         }
 
