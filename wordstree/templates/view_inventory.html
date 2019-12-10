@@ -5,8 +5,22 @@
 <title>Home</title>
 {% endblock %}
 
+{% block profile %}
+<ul class="navbar-nav ml-md-auto" id="user-info">
+    <li class="d-inline p-2 mr-1">Hi, {{ user.name }}</li>
+    <li class="d-inline p-2 bg-primary text-white mr-1">{{ user.token }} &Hstrok;</li>
+</ul>
+{% endblock %}
+
 {% block button %}
-<a class="btn btn-success ml-auto mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
+<ul class="navbar-nav bd-navbar-nav flex-row">
+    <li class="nav-item">
+        <a class="btn btn-success mr-1" href="{{ url_for('buy.buy_branches_get') }}">Marketplace</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn btn-success mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
+    </li>
+</ul>
 {% endblock %}
 
 {% block body %}
@@ -44,9 +58,6 @@
                 </div>
             </div>
         </div>
-        <a href="{{ url_for('buy.buy_branches_get')}}">
-            <button class="btn btn-outline-success buy-btn" type="button">Buy</button>
-        </a>
     </div>
 </div>
 

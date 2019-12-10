@@ -70,6 +70,7 @@ def test_buy_branches(client, app):
     user1_id = register_user('ted', 'ted', 'qwertyY123')
 
     branch_id = insert_branch(owner_id=user1_id, text='Branch 1', sell=True)
+    branch_id2 = insert_branch(owner_id=user1_id, text='Branch 2', sell=True)
 
     # sign up and login user 2
     user = signup_login(client)
@@ -77,10 +78,14 @@ def test_buy_branches(client, app):
     # buy branch
     client.post('/buy/branch', data={
         'new-bt': 'new Branch',
-        'branch_id': branch_id
+        'branch_id': branch_id,
+        'branch_price': 10
     }, follow_redirects=True)
 
-    cur.execute('SELECT text FROM branches_ownership WHERE owner_id=?;', [user['id']])
+    cur.execute('SELECT text, users.id, users.token FROM branches_ownership INNER JOIN users ON '
+                'branches_ownership.owner_id = users.id WHERE owner_id=?;', [user['id']])
     row = cur.fetchone()
 
-    assert row[0] == 'new Branch'
+    assert row["text"] == "new Branch"
+    assert row["token"] == 90
+
