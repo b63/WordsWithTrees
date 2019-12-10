@@ -36,19 +36,13 @@ def test_add_to_db(app: Flask):
     res = cur.fetchall()
     assert len(res) == 1
 
-    # check correct number of branches added to branches table
-    num_branches = res[0]['num_branches']
-    cur.execute('SELECT * FROM branches WHERE tree_id=?', [tree_id])
-    res2 = cur.fetchall()
-    assert num_branches == len(res2)
-
     # check correct number of entries have been added to zoom_info
     cur.execute('SELECT zoom_id FROM zoom_info WHERE tree_id=?', [tree_id])
-    res3 = cur.fetchall()
-    assert res3 is not None and len(res3) == 2
+    res2 = cur.fetchall()
+    assert res2 is not None and len(res2) == 2
 
     # check tiles information has been added to tiles table
-    cur.execute('SELECT tile_id FROM tiles WHERE zoom_id IN (?, ?)', [res3[0]['zoom_id'], res3[1]['zoom_id']])
+    cur.execute('SELECT tile_id FROM tiles WHERE zoom_id IN (?, ?)', [res2[0]['zoom_id'], res2[1]['zoom_id']])
     res4 = cur.fetchall()
     assert res4 is not None and len(res4) > 0
 

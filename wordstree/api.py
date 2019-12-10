@@ -24,6 +24,7 @@ def defaults():
     rv['zoom'] = current_app.config['DEFAULT_ZOOM']
     rv['tree_id'] = current_app.config['TREE_ID']
 
+    print(rv)
     response = Response(
         response=json.dumps(rv),
         mimetype='application/json',
@@ -65,10 +66,15 @@ def query_tree():
 
     # handle queries
     for tree_dic in rv:
+
         if 'max_zoom' in queries:
             cur.execute('SELECT tree.tree_id, COUNT(zoom_id) FROM tree JOIN zoom_info zi on tree.tree_id = zi.tree_id '
                         'WHERE tree.tree_id=?', [tree_dic['tree_id']])
             tree_dic['max_zoom'] = cur.fetchone()[1]
+
+        if 'num_branches' in queries:
+            cur.execute('SELECT tree_id, COUNT(branches.id) FROM branches WHERE tree_id=?', [tree_dic['tree_id']])
+            tree_dic['num_branches'] = cur.fetchone()[1]
 
     response = Response(
         response=json.dumps(rv),

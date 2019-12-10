@@ -43,12 +43,16 @@ function create_stage(canvas) {
 
 function init_tree(stage, tree_id, zoom) {
     //const frac_tree = create_tree(stage);
-    const t = new tree.Tree(3, 1, stage);
+    const canvas = stage.canvas;
+    const t = new tree.Tree(tree_id, zoom, stage);
     stage.addChild(t);
+
 
     t.init_tree_info();
     t.init_grid().then(value => t.load_tiles(0.5, 0.5)).then(
         function(value){
+            t.x = canvas.width/2 - t.grid.length * tree.tile_info_cache[tree_id][zoom]["image_width"]/2;
+            t.y = 0;
             stage.update();
         }
     );
@@ -100,6 +104,7 @@ function init_tree(stage, tree_id, zoom) {
         t.pan.mousey = y;
         if(!t.pan.panning) {
             t.pan.panning = true;
+            t.animate_pan();
         }
     });
 }

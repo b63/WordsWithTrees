@@ -421,13 +421,13 @@ class DBLoader(Loader):
                 elif not tree_name:
                     tree_name = _get_default_tree_name()
 
-                cur.execute('INSERT INTO tree (tree_id, tree_name, num_branches, full_width, full_height) '
-                            'VALUES (?, ?, ?, ?, ?)', [tree_id, tree_name, num_branches, full_width, full_height])
+                cur.execute('INSERT INTO tree (tree_id, tree_name, full_width, full_height) '
+                            'VALUES (?, ?, ?, ?)', [tree_id, tree_name, full_width, full_height])
             else:
                 if not tree_name:
                     tree_name = _get_default_tree_name()
-                cur.execute('INSERT INTO tree (num_branches, tree_name, full_width, full_height) VALUES (?, ?, ?, ?)',
-                            [num_branches, tree_name, full_width, full_height])
+                cur.execute('INSERT INTO tree (tree_name, full_width, full_height) VALUES (?, ?, ?)',
+                            [tree_name, full_width, full_height])
 
             cur.execute('SELECT last_insert_rowid()')
             rowid = cur.fetchone()[0]
