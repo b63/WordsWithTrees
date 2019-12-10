@@ -19,7 +19,25 @@ def view_inventory():
     cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
     user = cur.fetchone()
 
-    return render_template("view_inventory.html", branches=branches, user=user)
+    cur = db.execute('SELECT notifications.id, message FROM notifications '
+                     'JOIN notification_objects ON notifications.entity_id = notification_objects.id '
+                     'WHERE receiver_id = ?', [user_id])
+
+    notifications = cur.fetchall()
+
+    return render_template("view_inventory.html", branches=branches, user=user, notifications=notifications)
+
+
+@bp.route('/delete_notification', methods=['POST'])
+def delete_notification():
+    """ Deletes notification in database"""
+    db = get_db()
+
+    db.execute('DELETE FROM notifications WHERE id = ?', [request.form["id"]])
+    db.commit()
+
+    return ('', 204)
+
 
 
 
