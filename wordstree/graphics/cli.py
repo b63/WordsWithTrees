@@ -22,6 +22,7 @@ def parse_range_list(string: str, max: int = 0, min: int = 0):
       3) an open range, eg. -9, or 5- where the former corresponds to integers from `min` to 9 and latter
          the integers from 5 to `max`
 
+    :param string: the string to parse
     :param max: maximum integer in the list
     :param min: minimum integer in the list
     :return: list of integers that corresponds to the ranges in `string`
@@ -187,8 +188,6 @@ def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree
             ren.cache_tiles(zoom=level, saver=saver, saver_args=save_kwargs)
 
 
-# feature list:
-#   add commmand - add layers to a tree
 @click.command('add-layer')
 @click.option('-f', '--from', 'input_str', type=str, default='',
               help='Specifies where existing branches to which to add new layers to are stored;'

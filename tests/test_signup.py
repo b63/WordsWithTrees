@@ -1,34 +1,42 @@
-import os
-import sys
-import tempfile
-import pytest
-from flask import current_app
 from wordstree.db import init_db, get_db
 from werkzeug.security import check_password_hash
+
+
+def signup_login(client):
+    name = 'acbdefghijklmnopqrstuvwxyz'
+    username = '||66||'
+    password = 'qwertY123'
+
+    rv = client.post('/signup', data={
+        'name': name,
+        'username': username,
+        'password': password,
+        'password-confirm': password
+    }, follow_redirects=True)
+
+    user_id = get_db().execute('SELECT id FROM users WHERE username=? AND name=?', [username, name]).fetchone()[0]
+    return {
+        'username': username,
+        'name': name,
+        'password': password,
+        'id': user_id
+    }
 
 
 def testing_signup(client, app):
     """
     Adding new account to the database through a post request and checking if info was added in the database correctly
     """
-    with app.app_context():
-        db = get_db()
-        cur = db.cursor()
-        rv = client.post('/signup', data={
-            'name': 'Person',
-            'username': 'nick',
-            'password': 'qwertY123',
-            'password-confirm': 'qwertY123'}, follow_redirects=True)
+    db = get_db()
+    cur = db.cursor()
+    user = signup_login(client)
 
-        cur.execute('SELECT id FROM users WHERE username=?', ['nick'])
-        user_id = cur.fetchone()[0]
+    cur.execute('SELECT id, name, username, hash_password FROM users WHERE id=?', [user['id']])
+    user_content = cur.fetchone()
 
-        cur = db.execute('SELECT id, name, username, hash_password FROM users WHERE id=?', [user_id])
-        user_content = cur.fetchone()
-
-        assert user_content['name'] == 'Person'
-        assert user_content['username'] == 'nick'
-        assert check_password_hash(user_content['hash_password'], 'qwertY123')
+    assert user_content['name'] == user['name']
+    assert user_content['username'] == user['username']
+    assert check_password_hash(user_content['hash_password'], user['password'])
 
 
 def test_flash_messages(client):

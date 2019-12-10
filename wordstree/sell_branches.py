@@ -8,8 +8,9 @@ bp = Blueprint('sell', __name__)
 @bp.route('/sell', methods=['POST'])
 def sell_branches_post():
     """ Convert branch to available for purchase as requested by user. """
+    # TODO: check if the current user in session has required permission to modify the branch
     db = get_db()
-    db.execute('UPDATE branches_ownership SET price = ?, available_for_purchase = 1 WHERE id= ?',
+    db.execute('UPDATE branches_ownership SET price=?, available_for_purchase=1 WHERE branch_id=?',
                [request.form["selling_price"], request.form["branch_id"]])
     db.commit()
 

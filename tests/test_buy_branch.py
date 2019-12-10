@@ -1,61 +1,86 @@
+from wordstree.db import get_db
 import flask
-from wordstree.db import init_db, get_db
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import current_app
+
+from .test_login import register_user
+from .test_signup import signup_login
 
 
-def insert_branch(app, text, depth, ind, owner_id, sell):
+# hashmap to store indices of branch entries already added to database
+__cache = set()
+
+
+def insert_branch(depth=0, ind=None, owner_id=None, text='', sell=False):
+    """
+    Insert branch into `branches` table and an entry to `branches_ownership` table with the given owner-id, text, and
+    availability of purchase.
+    Note: requires application context
+
+    :param ind: index of branch
+    :param depth: depth of branch
+    :param owner_id: id of entry in `users` table
+    :param text: value of `text` column for entry in `branches_ownership` table
+    :param sell: whether the branch is available for purchase
+    :return: the id of the newly inserted entry in the `branches` table
+    """
+    if not flask.has_app_context():
+        raise Exception('app_context not pushed to application context stack')
+
+    app = current_app
     # dummy tree has no branches
     test_tree_id = app.config['DUMMY_TEST_TREE_ID']
 
     db = get_db()
     cur = db.cursor()
+
+    if ind is None:
+        # find index that's not already used
+        ind = 0
+        while (test_tree_id, ind) in __cache:
+            ind += 1
+
     cur.execute(
         'INSERT INTO branches (ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES'
         '(?, ?, ?, ?, ?, ?, ?, ?)',
-        [ind, depth, 10, 10, 0.1, 0, 0, test_tree_id]
+        [ind, depth, 10, 10, 0, 0, 0, test_tree_id]
     )
     branch_id = cur.execute('select last_insert_rowid()').fetchone()[0]
-    cur.execute(
-        'INSERT INTO branches_ownership (branch_id, owner_id, text, available_for_purchase) VALUES'
-        '(?, ?, ?, ?)',
-        [branch_id, owner_id, text, sell]
-    )
+    __cache.add((test_tree_id, ind))
+
+    if owner_id:
+        sell = 1 if sell else 0
+        cur.execute(
+            'INSERT INTO branches_ownership (branch_id, owner_id, text, available_for_purchase) VALUES'
+            '(?, ?, ?, ?)',
+            [branch_id, owner_id, text, sell]
+        )
+
+    return branch_id
 
 
 def test_buy_branches(client, app):
-    with app.app_context():
-        db = get_db()
-        cur = db.cursor()
+    """
+    Test if post request to /buy/branch for change of ownership of a branch is reflected in the `branches_ownership`
+    table.
+    """
+    db = get_db()
+    cur = db.cursor()
 
-        # sign up user 2
-        cur.execute('INSERT INTO users (name, username, hash_password) VALUES (?, ?, ?);',
-                    ['ted', 'ted', generate_password_hash('qwertY123')])
-        user2_id = cur.execute('select last_insert_rowid()').fetchone()[0]
+    # sign up user 1
+    user1_id = register_user('ted', 'ted', 'qwertyY123')
 
-        insert_branch(app, text='Branch 1', depth=1, ind=1, owner_id=user2_id, sell=1)
+    branch_id = insert_branch(owner_id=user1_id, text='Branch 1', sell=True)
 
-        cur.execute('SELECT branch_id FROM branches_ownership WHERE text=\'Branch 1\';')
-        row = cur.fetchone()
-        branch_id = row[0]
+    # sign up and login user 2
+    user = signup_login(client)
 
-        # sign up and login user1
-        client.post('/signup', data={
-            'name': 'Person',
-            'username': 'nick',
-            'password': 'qwertY123',
-            'password-confirm': 'qwertY123'
-        }, follow_redirects=True)
-        # get user_id
-        cur.execute('SELECT id FROM users WHERE username=?', ['nick'])
-        user1_id = cur.fetchone()[0]
+    # buy branch
+    client.post('/buy/branch', data={
+        'new-bt': 'new Branch',
+        'branch_id': branch_id
+    }, follow_redirects=True)
 
-        # buy branch
-        client.post('/buy/branch', data={
-            'new-bt': 'new Branch',
-            'branch_id': branch_id
-        }, follow_redirects=True)
+    cur.execute('SELECT text FROM branches_ownership WHERE owner_id=?;', [user['id']])
+    row = cur.fetchone()
 
-        cur.execute('SELECT text FROM branches_ownership WHERE owner_id=?;', [user1_id])
-        row = cur.fetchone()
-
-        assert row[0] == 'new Branch'
+    assert row[0] == 'new Branch'

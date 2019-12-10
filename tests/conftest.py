@@ -24,7 +24,7 @@ def app():
 
     with app.app_context():
         init_db(exclude=['70-dummy.sql'])
-    yield app
+        yield app
 
     os.close(db_file)
     os.unlink(db_path)
