@@ -18,6 +18,21 @@ def _to_csv(arr):
     return csv
 
 
+@bp.route('/defaults', methods=['GET'])
+def defaults():
+    rv = {}
+    rv['zoom'] = current_app.config['DEFAULT_ZOOM']
+    rv['tree_id'] = current_app.config['TREE_ID']
+
+    response = Response(
+        response=json.dumps(rv),
+        mimetype='application/json',
+        content_type='application/json;charset=utf-8'
+    )
+
+    return response
+
+
 @bp.route('/tree', methods=['GET'])
 def query_tree():
     tree_ids = request.args.getlist('id')
