@@ -1,7 +1,7 @@
 from wordstree.db import get_db
-from sqlite3 import dbapi2 as sqlite3
 from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
-from werkzeug.security import generate_password_hash
+
+from .services import render_service
 
 bp = Blueprint('buy', __name__)
 
@@ -75,8 +75,7 @@ def buy_branch():
     buying_id = request.form["branch_id"]
     branch_price = request.form["branch_price"]
     user_id = session['user_id']
-    print("buy", buying_id)
-    print("price", branch_price)
+
     db.execute('UPDATE branches_ownership SET owner_id=? WHERE branch_id=?', [user_id, buying_id])
     db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'], buying_id])
     db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
@@ -85,5 +84,9 @@ def buy_branch():
     # insert login succesful notification
     db.execute("INSERT INTO notifications (receiver_id, entity_id) VALUES (?, ?)", [user_id, 3])
     db.commit()
+
+    # re-render all tiles at all zoom levels in another thread
+    render_service.render(zooms=None)
+
     return redirect(url_for("buy.buy_branches_get"))
 

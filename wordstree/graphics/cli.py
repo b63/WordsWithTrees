@@ -102,7 +102,7 @@ def validate_zoom(ctx, param, value):
                    'generated.\n\0'
               )
 @with_appcontext
-def render_tree(zooms, depth, input_str: str, output_str: str, cache_tiles, tree_name):
+def render_tree(zooms, input_str: str, output_str: str, depth, cache_tiles, tree_name):
     """
     Generates/Loads branches from database `branches` table or from local JSON file, and renders the branches
     at specified a specified 'zoom level'. The 'zoom' level restricts the highest depth of visible branch and the
