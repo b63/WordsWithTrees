@@ -15,7 +15,9 @@ def create_app(test_config=None):
         DEBUG=True,
         SECRET_KEY='development key',
         CACHE_DIR=os.path.join(app.root_path, 'cache'),
-        IMAGE_DIR=os.path.join(app.root_path, 'cache/images')
+        IMAGE_DIR=os.path.join(app.root_path, 'cache/images'),
+        TREE_ID=5,
+        DEFAULT_ZOOM=0
     )
     app.config.from_envvar('FLASKR_SETTINGS', silent=True)
     if test_config:
