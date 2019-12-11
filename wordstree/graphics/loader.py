@@ -328,8 +328,8 @@ class DBLoader(Loader):
                 branch = branches[i]
                 index = branch.index
                 cur.execute('SELECT * FROM branches WHERE tree_id=? AND "ind"=?', [tree_id, index])
-                row = cur.fetchone()
-                if row is None:
+                branches_row = cur.fetchone()
+                if branches_row is None:
                     cur.execute('INSERT INTO branches (tree_id, ind, depth, length, width, angle, pos_x, pos_y) '
                                 'VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
                                 [tree_id, index, branch.depth, branch.length, branch.width, branch.angle, branch.pos.x,
@@ -348,10 +348,15 @@ class DBLoader(Loader):
             print('\nUpdating branches_ownership entries  ...')
             updated, inserted = 0, 0
 
-            for branch_id, info in ownership_info.items():
+            for branch_index, info in ownership_info.items():
 
-                cur.execute('SELECT * FROM branches_ownership WHERE branch_id=?', [branch_id])
-                row = cur.fetchone()
+                cur.execute('SELECT * FROM branches WHERE branches.tree_id=? AND branches.ind=?;',
+                            [tree_id, branch_index])
+                branches_row = cur.fetchone()
+
+                branch_id = branches_row['id']
+                cur.execute('SELECT * FROM branches_ownership WHERE branch_id=?;', [branch_id])
+                ownership_row = cur.fetchone()
 
                 owner_id = info['owner_id']
                 text = info.get('text', '')
@@ -359,7 +364,7 @@ class DBLoader(Loader):
                 available_for_purchase = 1 if info.get('available_for_purchase', None) else 0
                 available_for_bid = 1 if info.get('available_for_bid', None) else 0
 
-                if row is None:
+                if ownership_row is None:
                     cur.execute('INSERT INTO branches_ownership (branch_id, owner_id, text, price, '
                                 'available_for_purchase, available_for_bid) VALUES (?, ?, ?, ?, ?, ?);',
                                 [branch_id, owner_id, text, price, available_for_purchase, available_for_bid])
