@@ -2050,10 +2050,10 @@ INSERT INTO branches (id, ind, depth, length, width, angle, pos_x, pos_y, tree_i
 INSERT INTO branches (id, ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES (2046, 2045, 10, 0.006249999999999994, 0.0008589934592000006, -7.853981633974483, 0.40277281758684963, 0.6525000000000001, 3);
 INSERT INTO branches (id, ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES (2047, 2046, 10, 0.006249999999999994, 0.0008589934592000006, -10.995574287564276, 0.40277281758684963, 0.6525000000000001, 3);
 
--- dummy users
-INSERT INTO users (id, name, username, hash_password) VALUES (1, 'abcd', 'abcd', 'pbkdf2:sha256:150000$M30YUWW7$5ea7525df93eb4cfe23d60a8b553faf7d54dc8631cf273b1407a096910a705d4');
+-- dummy users, password testING123
+INSERT INTO users (id, name, username, hash_password) VALUES (1, 'abcd', 'abcd', 'pbkdf2:sha256:150000$VgI2Za0B$d77616efc62f71f437a0f72669ebb450513849b2456ba53f4c76459358ee85dd');
 
 -- dummy ownership
-INSERT INTO branches_ownership (id, branch_id, owner_id, text, price, available_for_purchase) VALUES (1, 1, 1, 'dank memes', 10, 0);
-INSERT INTO branches_ownership (id, branch_id, owner_id, text, price, available_for_purchase) VALUES (2, 2, 1, 'some more text', 10, 0);
-INSERT INTO branches_ownership (id, branch_id, owner_id, text, price, available_for_purchase) VALUES (3, 4, 1, 'random', 10, 0);
+INSERT INTO branches_ownership (id, branch_id, owner_id, text, price, available_for_purchase) VALUES (1, 1, 1, 'dank memes', 10, 1);
+INSERT INTO branches_ownership (id, branch_id, owner_id, text, price, available_for_purchase) VALUES (2, 2, 1, 'some more text', 10, 1);
+INSERT INTO branches_ownership (id, branch_id, owner_id, text, price, available_for_purchase) VALUES (3, 4, 1, 'random', 10, 1);

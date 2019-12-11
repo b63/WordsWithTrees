@@ -1,7 +1,7 @@
 from wordstree.db import get_db
-from sqlite3 import dbapi2 as sqlite3
 from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
-from werkzeug.security import generate_password_hash
+
+from .services import render_service
 
 bp = Blueprint('buy', __name__)
 
@@ -75,5 +75,8 @@ def buy_branch():
     db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
     db.execute('UPDATE users SET token = token - ? WHERE id = ?', [branch_price, user_id])
     db.commit()
+
+    render_service.render(zooms=None)
+
     return redirect(url_for("buy.buy_branches_get"))
 
