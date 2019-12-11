@@ -195,12 +195,13 @@ def _interpolate(start: List, end: List, r) -> List:
 
 def _get_branch_color(branch: Branch) -> List[float]:
     brown = [83/255.0, 49/255.0, 24/255.0]
+    green_start = [25/255.0, 131/255.0, 87/255.0]
     green = [0, 1, 0]
     depth = branch.depth
     # stem, brown color
     if depth == 0:
         return brown
 
-    return _interpolate(brown, green, depth/15)
+    return _interpolate(green_start, green, depth/15)
 
 
