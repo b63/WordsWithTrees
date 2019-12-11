@@ -70,6 +70,21 @@ function init_tree(stage, tree_id, zoom) {
         }
     });
 
+    const zoom_click_handler = function zoom_click(dzoom) {
+        const rect = canvas.getBoundingClientRect();
+        const x = rect.width/2;
+        const y = rect.height/2;
+        t.change_zoom(x, y, dzoom);
+    };
+
+    document.getElementById('canvas-zoom-in').addEventListener('click', (event) => {
+        zoom_click_handler(1);
+    });
+
+    document.getElementById('canvas-zoom-out').addEventListener('click', (event) => {
+        zoom_click_handler(-1);
+    });
+
     let mousedown = false;
     canvas.addEventListener('mousedown', function(event){
         mousedown = true;
