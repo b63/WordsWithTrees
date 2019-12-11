@@ -95,8 +95,14 @@ class Branch(JSONifiable):
             full_msg = '{}    {}    {}'.format(filler*num_fillers, msg, filler*num_fillers)
             extents = ctx.text_extents(full_msg)
 
-            ctx.rotate(angle)
-            ctx.translate(length/2-extents.width/2, extents.height/2)
+            if math.pi/2 <= angle <= 3*math.pi/2:
+                ctx.rotate(angle + math.pi)
+                ctx.translate(-length, 0)
+                ctx.scale(1, 1)
+                ctx.translate(length/2-extents.width/2, extents.height/2)
+            else:
+                ctx.rotate(angle)
+                ctx.translate(length/2-extents.width/2, extents.height/2)
 
             ctx.set_source_rgba(1, 1, 1, opacity)
             ctx.text_path(full_msg)

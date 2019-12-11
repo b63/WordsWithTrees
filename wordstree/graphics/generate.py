@@ -160,13 +160,16 @@ def generate_layer(branches: List[Branch], depth: int, begin: int, end=None) -> 
         new_branches.append(generate_root())
     else:
         layer_end = end
+        # index of first child branch
+        index = branches[begin].index + end-begin
 
         while begin < layer_end:
             parent = branches[begin]
-            sub_branches = generate_branches(parent, end, depth)
+            sub_branches = generate_branches(parent, index, depth)
 
             for j in range(len(sub_branches)):
                 new_branches.append(sub_branches[j])
+                index += 1
                 end += 1
             begin += 1
 
