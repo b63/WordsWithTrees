@@ -245,9 +245,8 @@ def add_layer():
             '-f', 'db:{}'.format(tree_id), '-n', 1, '--owner-id=666', '--bid=True', '--text=HOUSE', '--purchase=True',
             '--price=1'
         ])
-        render_service.render(zooms=None)
     except SystemExit:
-        pass
+        render_service.render(zooms=None)
 
     response = Response(
         response=json.dumps({'success': True}),
