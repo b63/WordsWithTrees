@@ -3,7 +3,7 @@ import json
 from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session, Response, abort
 
 from wordstree.db import get_db
-
+from wordstree.services import render_service
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -235,6 +235,27 @@ def query_tile():
         return Response('tile data not found', status=404)
     except ValueError as e:
         return Response(str(e), status=500)
+
+
+@bp.route('/add-layer', methods=['GET'])
+def add_layer():
+    tree_id = current_app.config['TREE_ID']
+    try:
+        current_app.cli.get_command(current_app, 'add-layer').main(args=[
+            '-f', 'db:{}'.format(tree_id), '-n', 1, '--owner-id=666', '--bid=True', '--text=HOUSE', '--purchase=True',
+            '--price=1'
+        ])
+        render_service.render(zooms=None)
+    except SystemExit:
+        pass
+
+    response = Response(
+        response=json.dumps({'success': True}),
+        mimetype='application/json',
+        content_type='application/json;charset=utf-8'
+    )
+
+    return response
 
 
 

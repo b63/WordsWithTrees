@@ -134,6 +134,25 @@ function init(e) {
         .then(function(defaults){
             init_tree(stage, defaults['tree_id'], defaults['zoom']);
         });
+
+    document.addEventListener('keydown', function (event) {
+        let alt = event.getModifierState('Alt');
+        let shift = event.getModifierState('Shift');
+        if (alt && shift && event.key === 'D'){
+            fetch('/api/add-layer', {method: 'GET'})
+                .then(function(response){
+                    if(!response.ok || response.status !== 200)
+                        throw new Error(response.statusText);
+                    return response.json()
+                })
+                .then(function(json){
+                    if (json['success']) {
+                        console.log('Added another layer.')
+                    }
+                });
+
+        }
+    })
 }
 
 document.addEventListener('DOMContentLoaded', init);
