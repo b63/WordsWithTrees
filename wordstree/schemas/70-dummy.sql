@@ -1,5 +1,5 @@
 -- dummy tree
-INSERT INTO tree (tree_id, tree_name, num_branches, full_width, full_height) VALUES (3, '5ded5770', 2047, 1024, 1024);
+INSERT INTO tree (tree_id, tree_name, full_width, full_height) VALUES (3, '5ded5770', 1024, 1024);
 
 -- dummy branches
 INSERT INTO branches (id, ind, depth, length, width, angle, pos_x, pos_y, tree_id) VALUES (1, 0, 0, 0.4, 0.008, 4.71238898038469, 0.5, 0.99, 3);

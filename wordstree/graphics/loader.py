@@ -1,5 +1,4 @@
 from typing import List
-import random
 import time
 import json
 import os
@@ -8,19 +7,9 @@ from flask import current_app, Flask
 import sqlite3
 
 from wordstree.db import get_db
-from wordstree.graphics import *
-from wordstree.graphics.util import Vec, radians, JSONifiable, create_file, open_file
-from wordstree.graphics.branch import Branch
-
-BRANCH_LENGTH_SHRINK_FACTOR = 1 / math.sqrt(2)
-# BRANCH_LENGTH_SHRINK_FACTOR = 0.97
-BRANCH_WIDTH_SHRINK_FACTOR = 0.8
-BRANCH_LENGTH_DELTA = 0.01
-BRANCH_ANGLE_DELTA = radians(10)
-# BRANCH_ANGLES = (radians(20), radians(-20))
-BRANCH_ANGLES = (1, -1)
-MAX_BRANCH_LENGTH = 0.2
-MAX_CHILDREN = 2
+from .util import Vec, JSONifiable, create_file, open_file
+from .branch import Branch
+from .generate import generate_tree
 
 
 def _remove_file_ext(fname: str) -> str:
@@ -35,109 +24,6 @@ def _remove_file_ext(fname: str) -> str:
 def _get_default_tree_name():
     def_name = hex(int(time.time()))
     return def_name[2:]
-
-
-def generate_root() -> Branch:
-    return Branch(
-        0,
-        Vec(0.5, 0.99),
-        **{
-            'length': 0.4,
-            'width': 0.008
-        }
-    )
-
-
-def generate_branches(parent: Branch, index: int, layer: int) -> List[Branch]:
-    if layer == 0:
-        return [generate_root()]
-
-    if layer > 10:
-        num_branches = math.floor(max(0, random.gauss(0.5 - 0.5 * layer, 0.5)) + 0.5)
-    else:
-        num_branches = MAX_CHILDREN
-
-    nangles = len(BRANCH_ANGLES)
-    branches = []
-
-    ppos, plength, pwidth, pangle = parent.pos, parent.length, parent.width, parent.angle
-
-    base_length = min(plength, MAX_BRANCH_LENGTH) * BRANCH_LENGTH_SHRINK_FACTOR
-
-    for i in range(num_branches):
-        width = pwidth * BRANCH_WIDTH_SHRINK_FACTOR
-        # length = max(base_length + random.gauss(0, BRANCH_LENGTH_DELTA) / (layer + 1), 0)
-        length = base_length
-        # angle = pangle + BRANCH_ANGLES[i % nangles] + random.gauss(0, BRANCH_ANGLE_DELTA)
-        angle = pangle + BRANCH_ANGLES[i % nangles] * math.pi / 2
-
-        x = ppos.x + math.cos(pangle) * plength
-        y = ppos.y + math.sin(pangle) * plength
-
-        branch = Branch(
-            index + i,
-            Vec(x, y),
-            **{
-                'length': length,
-                'angle': angle,
-                'parent': parent,
-                'width': width,
-                'depth': layer
-            }
-        )
-        branches.append(branch)
-
-    return branches
-
-
-def create_branches(branches: List, max_layers=13):
-    begin, end, layer = -1, 0, 0
-    max_length = len(branches)
-
-    if max_length < 1:
-        return 0
-
-    # create root branch
-    branches[end] = generate_root()
-    begin += 1
-    end += 1
-    layer += 1
-
-    layers = []
-    while layer < max_layers:
-        layers.append(begin)
-
-        layer_end = end
-        while begin < layer_end:
-            parent = branches[begin]
-            sub_branches = generate_branches(parent, end, layer)
-
-            i, size = 0, len(sub_branches)
-            while i < size and end < max_length:
-                branches[end] = sub_branches[i]
-                i += 1
-                end += 1
-            begin += 1
-
-        if begin == end:
-            # no new branches were added
-            break
-
-        layer += 1
-
-    # return number of branches created
-    return layers, end
-
-
-def generate_tree(max_depth=10, cls=None) -> Tuple[List, List[int], int]:
-    print('Generating new tree max_depth={} ...'.format(max_depth))
-
-    branches = [None for i in range(2 ** max_depth + 1)]
-    layers, length = create_branches(branches, max_layers=max_depth)
-
-    print('  layers: {}'.format(layers))
-    print('  number of branches: {}'.format(length))
-    return branches, layers, length
 
 
 class Loader:
@@ -389,6 +275,104 @@ class DBLoader(Loader):
 
             db.commit()
 
+    def update_branches(self, tree_id, **kwargs):
+        """
+        Update branch entries with tree-id `tree-id` with information in contained is the list of :class:`Branch`
+        objects in `branches`. If entries have same index (i.e `ind` column value same as :meth:`Branch.index`), then
+        the entry will be updated. If such an entry does not exist, it will be inserted.
+
+        Additionally, a map of branch-id, dictionary pairs can be passed to :param:`ownership_info` which will be used
+        to update the `branches_ownership` table. Existing entries with same branch-id will be updated, and new ones will
+        be inserted into the table.
+
+        :param tree_id: id of entry in the `tree` table
+        :param branches: list of :class:`Branch` objects to insert into or update in the `branches` table
+        :param num_branches: number of :class:`Branch` objects containing in the `branches` list; if not provided,
+            defaults to `len(branches)`
+        :param ownership_info: map of branch-id and dictionary pairs where the dictionary maps all the columns in
+            `branches_ownership` table to values for that column. Note that the dictionary that each branch-id maps to
+            must provide values for the following columns, unless defaults are given:
+                ======================== ======= ===============
+                Column Name              Type      Default
+                ======================== ======= ===============
+                `owner_id`               `int`
+                `text`                   `str`   ``
+                `price`                  `int`   `0`
+                `available_for_purchase` `bool`  `False`
+                `available_for_bid`      `bool`  `True`
+
+        :param kwargs: additional options
+        :return:
+        """
+        # use self.branches if branches kwarg not provided
+        branches, num_branches = kwargs.get('branches', None), kwargs.get('num_branches', None)
+        if branches is None:
+            branches = self.branches
+            num_branches = self.num_branches
+        elif not num_branches:
+            num_branches = len(branches)
+
+        ownership_info = kwargs.get('ownership_info', dict())
+        with self.app.app_context():
+            db = get_db()
+            cur = db.cursor()
+
+            cur.execute('SELECT tree_id FROM tree WHERE tree_id=?', [tree_id])
+            res = cur.fetchone()
+            if res is None:
+                raise Exception('entry with tree-id \'{}\' does not exist'.format(tree_id))
+
+            print('\nUpdating branches with tree-id \'{}\' ...'.format(tree_id))
+            updated, inserted = 0, 0
+            for i in range(num_branches):
+                branch = branches[i]
+                index = branch.index
+                cur.execute('SELECT * FROM branches WHERE tree_id=? AND "ind"=?', [tree_id, index])
+                row = cur.fetchone()
+                if row is None:
+                    cur.execute('INSERT INTO branches (tree_id, ind, depth, length, width, angle, pos_x, pos_y) '
+                                'VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+                                [tree_id, index, branch.depth, branch.length, branch.width, branch.angle, branch.pos.x,
+                                 branch.pos.y])
+                    inserted += 1
+                else:
+                    cur.execute('UPDATE branches SET "depth"=?, "length"=?, "width"=?, "angle"=?, "pos_x"=?, "pos_y"=? '
+                                ' WHERE tree_id=? AND "ind"=?',
+                                [branch.depth, branch.length, branch.width,
+                                 branch.angle, branch.pos.x, branch.pos.y, tree_id, index]
+                                )
+                    updated += 1
+
+            print('  branches table: updated {}, inserted {}'.format(updated, inserted))
+
+            print('\nUpdating branches_ownership entries  ...')
+            updated, inserted = 0, 0
+
+            for branch_id, info in ownership_info.items():
+
+                cur.execute('SELECT * FROM branches_ownership WHERE branch_id=?', [branch_id])
+                row = cur.fetchone()
+
+                owner_id = info['owner_id']
+                text = info.get('text', '')
+                price = info.get('price', 0)
+                available_for_purchase = 1 if info.get('available_for_purchase', None) else 0
+                available_for_bid = 1 if info.get('available_for_bid', None) else 0
+
+                if row is None:
+                    cur.execute('INSERT INTO branches_ownership (branch_id, owner_id, text, price, '
+                                'available_for_purchase, available_for_bid) VALUES (?, ?, ?, ?, ?, ?);',
+                                [branch_id, owner_id, text, price, available_for_purchase, available_for_bid])
+                    inserted += 1
+                else:
+                    cur.execute('UPDATE branches_ownership SET owner_id=?, text=?, price=?, available_for_purchase=?,'
+                                'available_for_bid=? WHERE branch_id=?',
+                                [owner_id, text, price, available_for_purchase, available_for_bid, branch_id]
+                                )
+                    updated += 1
+            print('  branches_ownership table: updated {}, inserted {}'.format(updated, inserted))
+            db.commit()
+
     def save_branches(self, **kwargs):
         tree_id = kwargs.get('tree_id', None)
         full_width = kwargs.get('width', 0)
@@ -437,13 +421,13 @@ class DBLoader(Loader):
                 elif not tree_name:
                     tree_name = _get_default_tree_name()
 
-                cur.execute('INSERT INTO tree (tree_id, tree_name, num_branches, full_width, full_height) '
-                            'VALUES (?, ?, ?, ?, ?)', [tree_id, tree_name, num_branches, full_width, full_height])
+                cur.execute('INSERT INTO tree (tree_id, tree_name, full_width, full_height) '
+                            'VALUES (?, ?, ?, ?)', [tree_id, tree_name, full_width, full_height])
             else:
                 if not tree_name:
                     tree_name = _get_default_tree_name()
-                cur.execute('INSERT INTO tree (num_branches, tree_name, full_width, full_height) VALUES (?, ?, ?, ?)',
-                            [num_branches, tree_name, full_width, full_height])
+                cur.execute('INSERT INTO tree (tree_name, full_width, full_height) VALUES (?, ?, ?)',
+                            [tree_name, full_width, full_height])
 
             cur.execute('SELECT last_insert_rowid()')
             rowid = cur.fetchone()[0]
@@ -474,23 +458,28 @@ class DBLoader(Loader):
                         'branches.id = branches_ownership.branch_id WHERE tree_id=? ORDER BY "ind" ASC', [tree_id])
             results = cur.fetchall()
 
-        num_branches = len(results)
-        branches = [None for i in range(num_branches)]
+        if results is None or len(results) == 0:
+            num_branches = 0
+            branches = []
+            layers = []
+        else:
+            num_branches = len(results)
+            branches = [None for i in range(num_branches)]
 
-        layers, layer = [], -1
-        for i in range(num_branches):
-            row = results[i]
-            depth, length, width = row['depth'], row['length'], row['width']
-            angle = row['angle']
-            posx, posy = row['pos_x'], row['pos_y']
-            text = row['text']
+            layers, layer = [], -1
+            for i in range(num_branches):
+                row = results[i]
+                depth, length, width = row['depth'], row['length'], row['width']
+                angle = row['angle']
+                posx, posy = row['pos_x'], row['pos_y']
+                text = row['text']
 
-            branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle, text=text)
-            if depth > layer:
-                layers.append(i)
-                layer = depth
-            elif depth < layer:
-                raise Exception('branches not in order')
+                branches[i] = Branch(i, Vec(posx, posy), depth=depth, length=length, width=width, angle=angle, text=text)
+                if depth > layer:
+                    layers.append(i)
+                    layer = depth
+                elif depth < layer:
+                    raise Exception('branches not in order')
 
         print('  branches read: {}\n  layers: {}'.format(num_branches, str(layers).strip('[]')))
 

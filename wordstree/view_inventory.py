@@ -16,7 +16,7 @@ def view_inventory():
                      ' WHERE owner_id = ? AND available_for_purchase = 0', [user_id])
     branches = cur.fetchall()
 
-    cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
+    cur = db.execute('SELECT name FROM users WHERE id = ?', [user_id])
     user = cur.fetchone()
 
     return render_template("view_inventory.html", branches=branches, user=user)

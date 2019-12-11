@@ -44,7 +44,7 @@ def buy_branches_get():
                          '= b.id WHERE available_for_purchase=1 ORDER BY b.id DESC')
         available_branches = cur.fetchall()
 
-    cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
+    cur = db.execute('SELECT name, token FROM users WHERE id = ?', [user_id])
     user = cur.fetchone()
 
     return render_template('buy_branch.html', branches=available_branches, user=user)
@@ -56,7 +56,7 @@ def buy_branches_search():
     db = get_db()
     query = request.args['search_field']
     cur = db.execute("SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id"
-                     "= b.id WHERE text LIKE (?) ",('%'+query+'%',))
+                     "= b.id WHERE text LIKE (?) ", ('%'+query+'%',))
     filtered_branches = cur.fetchall()
     return render_template('buy_branch.html', branches=filtered_branches)
 

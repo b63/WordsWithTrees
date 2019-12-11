@@ -175,14 +175,12 @@ const tree = {};
             y_norm = Math.max(y_norm, 0);
             const origin_col = Math.min(Math.floor(x_norm*tile_info.grid), tile_info.grid - cols);
             const origin_row = Math.min(Math.floor(y_norm*tile_info.grid), tile_info.grid - rows);
-            console.log('origin:', origin_row, origin_col);
 
             // find new pivot in the grid
             let grid_row = ((origin_row - this.tile_origin_row ) % rows) + this._pivot_row;
             let grid_col = ((origin_col - this.tile_origin_col ) % cols) + this._pivot_col;
             if (grid_row < 0) { grid_row += rows; }
             if (grid_col < 0) { grid_col += cols; }
-            console.log('pivot:', grid_row, grid_col);
 
             // update tile origin position
             this.tile_origin_row = origin_row;
