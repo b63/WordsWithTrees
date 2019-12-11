@@ -4,6 +4,16 @@ const tree = {};
     global.tile_info_cache = {};
     global.tree_info_cache = {};
 
+    function clamp(min, max, value){
+        if (value < min) {
+            return min;
+        } else if(value > max) {
+            return max;
+        } else {
+            return value;
+        }
+    }
+
     function request_zoom_info(tree_id, zoom_level) {
         let params = new URLSearchParams();
         params.append('q', `${zoom_level},${tree_id}`);
@@ -90,8 +100,8 @@ const tree = {};
                 }
 
 
-                const cols = Math.min(Math.floor(width/tile_info['image_width']) + 2, tile_info.grid);
-                const rows = Math.min(Math.floor(height/tile_info['image_height']) + 2, tile_info.grid);
+                const cols = Math.min(Math.floor(width/tile_info['image_width']) + 4, tile_info.grid);
+                const rows = Math.min(Math.floor(height/tile_info['image_height']) + 4, tile_info.grid);
                 const grid = new Array(rows);
 
                 for(let i = 0; i < rows; ++i) {
@@ -144,12 +154,17 @@ const tree = {};
                 let y_norm = cy_norm - dcy_norm_new;
 
                 // floor to coordinate of top of a tile
-                let tile_x_norm = Math.floor(x_norm/new_tile_dx)*new_tile_dy;
-                let tile_y_norm = Math.floor(y_norm/new_tile_dy)*new_tile_dy;
+                let col = Math.floor(x_norm/new_tile_dx);
+                let row = Math.floor(y_norm/new_tile_dy);
+                let tile_x_norm = clamp(0, 1, col*new_tile_dx);
+                let tile_y_norm = clamp(0, 1, row*new_tile_dy);
 
                 _this.load_tiles(tile_x_norm, tile_y_norm).then(function(value){
+                    console.log(row, col);
+                    console.log(_this.tile_origin_row, _this.tile_origin_col);
                     let shift_x = (x_norm * new_grid_size - _this.tile_origin_col) * new_image_width;
                     let shift_y = (y_norm * new_grid_size - _this.tile_origin_row) * new_image_height;
+                    console.log('shift', shift_x, shift_y);
 
                     _this.x -= shift_x;
                     _this.y -= shift_y;
