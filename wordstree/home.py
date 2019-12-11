@@ -34,7 +34,7 @@ def home():
     """ Handles requests to the root page """
     _initial_render()
 
-    user_id = session['user_id']
+    user_id = session.get('user_id')
 
     db = get_db()
     row = db.execute('SELECT id FROM users WHERE id=?', [user_id]).fetchone()

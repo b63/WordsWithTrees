@@ -6,7 +6,7 @@
 
 .container-fluid {
     background-color: #f7f7ea;
-    overflow:hidden
+    overflow: scroll;
 }
 
 html, body {
