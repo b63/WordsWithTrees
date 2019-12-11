@@ -44,10 +44,17 @@ def buy_branches_get():
                          '= b.id WHERE available_for_purchase=1 ORDER BY b.id DESC')
         available_branches = cur.fetchall()
 
+    # get user's name and token amount
     cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
     user = cur.fetchone()
 
-    return render_template('buy_branch.html', branches=available_branches, user=user)
+    # get notifications for the user
+    cur = db.execute('SELECT notifications.id, message FROM notifications '
+                     'JOIN notification_objects ON notifications.entity_id = notification_objects.id '
+                     'WHERE receiver_id = ?', [user_id])
+    notifications = cur.fetchall()
+
+    return render_template('buy_branch.html', branches=available_branches, user=user, notifications=notifications)
 
 
 @bp.route('/buy/search', methods=['GET'])
@@ -74,6 +81,9 @@ def buy_branch():
     db.execute('UPDATE branches_ownership SET text=? WHERE branch_id=?', [request.form['new-bt'], buying_id])
     db.execute('UPDATE branches_ownership SET available_for_purchase=0 WHERE branch_id=?', [buying_id])
     db.execute('UPDATE users SET token = token - ? WHERE id = ?', [branch_price, user_id])
+
+    # insert login succesful notification
+    db.execute("INSERT INTO notifications (receiver_id, entity_id) VALUES (?, ?)", [user_id, 3])
     db.commit()
     return redirect(url_for("buy.buy_branches_get"))
 

@@ -16,13 +16,14 @@ def view_inventory():
                      ' WHERE owner_id = ? AND available_for_purchase = 0', [user_id])
     branches = cur.fetchall()
 
+    # get user's name and token amount
     cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
     user = cur.fetchone()
 
+    # get notifications for the user
     cur = db.execute('SELECT notifications.id, message FROM notifications '
                      'JOIN notification_objects ON notifications.entity_id = notification_objects.id '
                      'WHERE receiver_id = ?', [user_id])
-
     notifications = cur.fetchall()
 
     return render_template("view_inventory.html", branches=branches, user=user, notifications=notifications)

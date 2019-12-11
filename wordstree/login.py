@@ -25,7 +25,7 @@ def login_as_post():
     # remember which user has logged in
     session["user_id"] = user_data["id"]
 
-    # insert login succesful notification
+    # insert login successful notification
     db.execute("INSERT INTO notifications (receiver_id, entity_id) VALUES (?, ?)", [user_data["id"], 1])
     db.commit()
 
