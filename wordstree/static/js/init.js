@@ -41,31 +41,18 @@ function create_stage(canvas) {
     return stage;
 }
 
-function init(e) {
-    const canvas = document.getElementById('tree_canvas');
-    const stage  = create_stage(canvas);
-
-    const wrapper = document.getElementById('canvas-wrapper');
-    const resize_canvas = function(){
-        const rect = wrapper.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        canvas.draw_stage(canvas.width, rect.height);
-
-    };
-
-    resize_canvas();
-    const sensor = new ResizeSensor(wrapper, resize_canvas);
-
+function init_tree(stage, tree_id, zoom) {
     //const frac_tree = create_tree(stage);
-    const t = new tree.Tree(3, 1, stage);
+    const canvas = stage.canvas;
+    const t = new tree.Tree(tree_id, zoom, stage);
     stage.addChild(t);
+
 
     t.init_tree_info();
     t.init_grid().then(value => t.load_tiles(0.5, 0.5)).then(
         function(value){
-            console.log(value);
-            console.log(t.children);
+            t.x = canvas.width/2 - t.grid.length * tree.tile_info_cache[tree_id][zoom]["image_width"]/2;
+            t.y = 0;
             stage.update();
         }
     );
@@ -89,7 +76,6 @@ function init(e) {
         const rect = canvas.getBoundingClientRect();
         t.pan.x = event.clientX - rect.x;
         t.pan.y = event.clientY - rect.y;
-        console.log('mousedown: ', t.pan.x, t.pan.y)
     });
 
     document.addEventListener('mouseup', function(event){
@@ -111,7 +97,6 @@ function init(e) {
         if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
             mousedown = false;
             t.pan.panning = false;
-            console.log('out of bounds');
             return;
         }
 
@@ -119,14 +104,36 @@ function init(e) {
         t.pan.mousey = y;
         if(!t.pan.panning) {
             t.pan.panning = true;
-            console.log('started');
-            t.animate_pan().then(function(value){
-                console.log('ended');
-            });
+            t.animate_pan();
         }
     });
+}
 
-    console.log('Tree instance:', t);
+function init(e) {
+    const canvas = document.getElementById('tree_canvas');
+    const stage  = create_stage(canvas);
+
+    const wrapper = document.getElementById('canvas-wrapper');
+    const resize_canvas = function(){
+        const rect = wrapper.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.draw_stage(canvas.width, rect.height);
+
+    };
+
+    resize_canvas();
+    const sensor = new ResizeSensor(wrapper, resize_canvas);
+
+    fetch('/api/defaults', {method: 'GET'})
+        .then(function(response){
+            if(!response.ok || response.status !== 200)
+                throw new Error(response.statusText);
+            return response.json()
+        })
+        .then(function(defaults){
+            init_tree(stage, defaults['tree_id'], defaults['zoom']);
+        });
 }
 
 document.addEventListener('DOMContentLoaded', init);

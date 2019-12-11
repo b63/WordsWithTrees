@@ -16,8 +16,8 @@ def view_inventory():
                      ' WHERE owner_id = ? AND available_for_purchase = 0', [user_id])
     branches = cur.fetchall()
 
-    # get user's name and token amount
-    cur = db.execute('SELECT name, token FROM users WHERE id = ?', str(user_id))
+    cur = db.execute('SELECT name FROM users WHERE id = ?', [user_id])
+
     user = cur.fetchone()
 
     # get notifications for the user
