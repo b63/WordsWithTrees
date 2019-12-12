@@ -18,7 +18,6 @@ create table notifications (
     "id" integer primary key autoincrement,
     "receiver_id" integer,
     "entity_id" integer,
-    "branch_text" text,
     foreign key (receiver_id) REFERENCES users("id"),
     foreign key (entity_id) REFERENCES notification_objects("id")
 );
