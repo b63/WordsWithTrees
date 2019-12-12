@@ -90,9 +90,9 @@ class Branch(JSONifiable):
 
             msg_extents = ctx.text_extents(msg)
             filler_extents = ctx.text_extents(filler)
-            num_fillers = math.floor((length-msg_extents.width)/filler_extents.x_advance/2)-2
+            num_fillers = max(math.floor((length-msg_extents.width)/filler_extents.x_advance/2)-2, 0)
 
-            full_msg = '{}    {}    {}'.format(filler*num_fillers, msg, filler*num_fillers)
+            full_msg = '{}    {}    {}'.format(filler*num_fillers, msg, filler*num_fillers).strip()
             extents = ctx.text_extents(full_msg)
 
             if math.pi/2 <= angle <= 3*math.pi/2:
