@@ -107,6 +107,7 @@ body {
 .scroll-box {
 border: none;
 height: 200px;
+width: 500px;
 overflow-y: scroll;
 }
 /* all scroll bar styles have been found in https://www.quackit.com/html/html_editors/scratchpad/?example=/html/codes/html_scrollbars_webkit_thin_green_and_gold_flat_rounded_corners */

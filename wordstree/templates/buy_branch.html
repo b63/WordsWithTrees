@@ -64,13 +64,19 @@
 
                 <ul class="list-group scroll-box">
                     {% for branch in branches %}
-                    <li class="list-group-item">{{ branch.text }}
-                        <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
-                        <button class="btn btn-info" data-id="{{branch.id}}" data-price="{{ branch.price}}"
-                                data-target="#buyModal"
-                                data-text="{{ branch.text }}" data-toggle="modal"
-                                type="button">Buy
-                        </button>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-9 mt-2">{{ branch.text }}
+                                <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-info" data-id="{{branch.id}}" data-price="{{ branch.price}}"
+                                        data-target="#buyModal"
+                                        data-text="{{ branch.text }}" data-toggle="modal"
+                                        type="button">Buy
+                                </button>
+                            </div>
+                        </div>
                     </li>
                     {% else %}
                     <li><em>Unbelievable. There are no available branches to purchase </em></li>
