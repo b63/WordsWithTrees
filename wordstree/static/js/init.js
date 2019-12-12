@@ -51,8 +51,9 @@ function init_tree(stage, tree_id, zoom) {
     t.init_tree_info();
     t.init_grid().then(value => t.load_tiles(0.5, 0.5)).then(
         function(value){
-            t.x = canvas.width/2 - t.grid.length * tree.tile_info_cache[tree_id][zoom]["image_width"]/2;
-            t.y = 0;
+            const tile_info = tree.tile_info_cache[tree_id][zoom];
+            t.x = canvas.width/2 - t.grid.length * tile_info["image_width"]/2;
+            t.y = -tile_info["grid"]*tile_info["image_height"]+canvas.height;
             stage.update();
         }
     );
