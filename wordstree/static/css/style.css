@@ -6,7 +6,7 @@
 
 .container-fluid {
     background-color: #f7f7ea;
-    overflow: scroll;
+    overflow-y: scroll
 }
 
 html, body {
@@ -74,6 +74,15 @@ body {
     color: white;
 }
 
+.toast-header {
+    background-color: #FFCC00;
+    color: black;
+}
+
+.fade {
+    transition: opacity 1s linear;
+}
+
 @media only screen and (max-width: 768px) {
     #token-amount{
         width: 90px;
@@ -81,7 +90,42 @@ body {
         margin-bottom: 4px;
     }
 
+
+}
+
+.scroll-box {
+    height: 200px;
+    overflow-y: scroll;
+}
+
+.scroll-box-inv {
+    height: 300px;
+    overflow-y: scroll;
+}
+
+/* Box styles */
+.scroll-box {
+border: none;
+height: 200px;
+overflow-y: scroll;
+}
+/* all scroll bar styles have been found in https://www.quackit.com/html/html_editors/scratchpad/?example=/html/codes/html_scrollbars_webkit_thin_green_and_gold_flat_rounded_corners */
+/* Scrollbar styles */
+ul::-webkit-scrollbar {
+height: 12px;
 }
 
 
+ul::-webkit-scrollbar-track {
+background: #4C2C11 !important;
+border-radius: 10px;
+}
 
+ul::-webkit-scrollbar-thumb {
+border-radius: 10px;
+background: #28a745;
+}
+
+.btn-info {
+    background-color: #007bff!important;
+}

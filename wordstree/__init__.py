@@ -50,5 +50,7 @@ def create_app(test_config=None):
     from . import sell_branches
     app.register_blueprint(sell_branches.bp)
 
+    from . import about
+    app.register_blueprint(about.bp)
 
     return app

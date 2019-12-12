@@ -31,57 +31,51 @@
                 <canvas id="tree_canvas">
                 </canvas>
             </div>
+            <button id="canvas-zoom-in" type="button mr-0 mt-1" class="btn btn-success">+</button>
+            <button id="canvas-zoom-out" type="button ml-0 mt-1" class="btn btn-warning">-</button>
         </div>
         <div class="col-md-3 mt-4">
-            <div class="row">
+            <div class="row mr-0 ml-0">
                 <div class="col text-center">
                     <p class="h1">Words with Trees</p>
                     <img alt="" height="250" src="../static/tree.png" width="250">
                     <p class="h2">Buy Trees</p>
                 </div>
 
-                <div class="row">
-
-                    <div class="input-group md-form form-sm form-2 pl-0 mb-3 col-9 ml-1">
-                        <form action="{{ url_for('buy.buy_branches_search') }}" class="form-inline mr-auto"
-                              method="get">
-                            <input aria-label="Search" class="form-control mr-sm-2" name="search_field" placeholder="Search"
-                                   type="text">
-                            <button class="btn btn-outline-success btn-rounded btn-sm my-0" type="submit">Search
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="dropdown show col-2">
-                        <a aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle bg-success"
-                           data-toggle="dropdown" href="#" id="dropdownMenuLink" role="button">
-                            Filter By:
-                        </a>
-                        <div aria-labelledby="dropdownMenuLink" class="dropdown-menu">
-                            <a class="dropdown-item" href="?filter=visibility">Visibility</a>
-                            <a class="dropdown-item" href="?filter=price">Price</a>
+                <div class="row mt-2 mb-2">
+                    <form class="form-inline">
+                        <input aria-label="Search" class="form-control sm-2 mr-1" placeholder="Search" type="text">
+                        <div class="dropdown show">
+                            <a aria-expanded="false" aria-haspopup="true"
+                               class="btn btn-secondary dropdown-toggle bg-success mr-1"
+                               data-toggle="dropdown" href="#" id="dropdownMenuLink" role="button">
+                                Filter
+                            </a>
+                            <div aria-labelledby="dropdownMenuLink" class="dropdown-menu">
+                                <a class="dropdown-item" href="?filter=visibility">Visibility</a>
+                                <a class="dropdown-item" href="?filter=price">Price</a>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    </form>
 
-            <div class="row">
-                <div class="col">
-                    <ul class="list-group">
-                        {% for branch in branches %}
-                        <li class="list-group-item">{{ branch.text }}
-                            <span class="ml-5 mr-5">${{ branch.price }}</span>
-                            <button class="btn btn-info btn-lg" data-id="{{branch.id}}" data-price="{{ branch.price}}"
-                                    data-target="#buyModal"
-                                    data-text="{{ branch.text }}" data-toggle="modal"
-                                    type="button">Buy!
-                            </button>
-                        </li>
-                        {% else %}
-                        <li><em>Unbelievable. There are no available branches to purchase </em></li>
-                        {% endfor %}
-                    </ul>
+
                 </div>
+
+                <ul class="list-group scroll-box">
+                    {% for branch in branches %}
+                    <li class="list-group-item">{{ branch.text }}
+                        <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
+                        <button class="btn btn-info" data-id="{{branch.id}}" data-price="{{ branch.price}}"
+                                data-target="#buyModal"
+                                data-text="{{ branch.text }}" data-toggle="modal"
+                                type="button">Buy
+                        </button>
+                    </li>
+                    {% else %}
+                    <li><em>Unbelievable. There are no available branches to purchase </em></li>
+                    {% endfor %}
+                </ul>
             </div>
 
             <!-- Modal from https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
@@ -93,36 +87,37 @@
                             <h4>Buy Branch</h4>
                             <button class="close" data-dismiss="modal" type="button">&times;</button>
                         </div>
-                        <form action="{{ url_for('buy.buy_branch') }}" class="form-signin needs-validation"
-                              method="post" novalidate="">
-                            <div class="modal-body">
+                        <div class="modal-body">
+                            <form action="{{ url_for('buy.buy_branch') }}" class="form-signin needs-validation"
+                                  method="post" novalidate="">
                                 <p id="branch_name">Branch name</p>
                                 <p><span>$ </span><span id="branch_price">price</span></p>
-                                <textarea maxlength="35" name="new-bt">
-                  </textarea>
+                                <textarea class="form-control" maxlength="20" name="new-bt"
+                                          placeholder="Enter message here" required></textarea>
                                 <div class="invalid-feedback">
-                                    Your message is too long
+                                    You must enter a message.
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <input class="branch_id" name="branch_id" type="hidden">
-                                <input class="branch_price" name="branch_price" type="hidden">
-                                <input class="btn btn-default" id='submit-button' type="submit" value="submit">
-                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input class="branch_id" name="branch_id" type="hidden">
+                            <input class="branch_price" name="branch_price" type="hidden">
+                            <button class="btn btn-primary" type="submit">Confirm</button>
+                        </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{% endblock %}
+    {% endblock %}
 
-{% block scripts %}
-<script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
-<script src="{{ url_for('static', filename='js/ResizeSensor.js') }}"></script>
-<script src="{{ url_for('static', filename='js/misc.js') }}"></script>
-<script src="{{ url_for('static', filename='js/branch.js') }}"></script>
-<script src="{{ url_for('static', filename='js/tree.js') }}"></script>
-<script src="{{ url_for('static', filename='js/init.js') }}"></script>
-<script src="{{ url_for('static', filename='js/buy-branch.js') }}"></script>
-{% endblock %}
+    {% block scripts %}
+    <script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
+    <script src="{{ url_for('static', filename='js/ResizeSensor.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/misc.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/branch.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tree.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/init.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/buy-branch.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/form-validation.js') }}" type="text/javascript"></script>
+    {% endblock %}

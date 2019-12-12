@@ -25,6 +25,10 @@ def login_as_post():
     # remember which user has logged in
     session["user_id"] = user_data["id"]
 
+    # insert login successful notification
+    db.execute("INSERT INTO notifications (receiver_id, entity_id) VALUES (?, ?)", [user_data["id"], 1])
+    db.commit()
+
     # redirect user to marketplace with user's inventory shown
     return redirect(url_for("view_inventory.view_inventory"))
 
