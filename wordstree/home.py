@@ -10,7 +10,8 @@ def _initial_branches(num_layers):
     tree_id = current_app.config['TREE_ID']
     try:
         current_app.cli.get_command(current_app, 'add-layer').main(args=[
-            '-f', 'db:{}'.format(tree_id), '-n', num_layers, '--owner-id=666', '--bid=True', '--text=HOUSE'
+            '-f', 'db:{}'.format(tree_id), '-n', num_layers, '--owner-id=666', '--bid=True', '--text=HOUSE',
+            '--purchase=True', '--price=1'
         ])
     except SystemExit:
         pass
@@ -34,7 +35,7 @@ def home():
     """ Handles requests to the root page """
     _initial_render()
 
-    user_id = session['user_id']
+    user_id = session.get('user_id')
 
     db = get_db()
     row = db.execute('SELECT id FROM users WHERE id=?', [user_id]).fetchone()

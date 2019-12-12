@@ -44,7 +44,7 @@
       <div class="toast-header">
 
         <strong class="mr-auto">Notification</strong>
-        <button id="close" type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close" data-id="{{ notification.id }}">
+        <button id="close" onclick="delete_notification('{{ notification.id }}')" type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
