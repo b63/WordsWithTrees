@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
+<title>About</title>
+{% endblock %}
+
+{% block profile %}
+<ul class="navbar-nav ml-md-auto" id="user-info">
+    <li class="d-inline p-2 mr-1">Hi, {{ user.name }}</li>
+    <li class="d-inline p-2 bg-primary text-white mr-1" id="token-amount">{{ user.token }} &Hstrok;</li>
+</ul>
+{% endblock %}
+
+{% block button %}
+<ul class="navbar-nav bd-navbar-nav flex-row">
+    <li class="nav-item">
+        <a class="btn btn-success mr-1" href="{{ url_for('view_inventory.view_inventory') }}">Inventory</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn btn-success mr-1" href="{{ url_for('login.logout') }}">Log Out</a>
+    </li>
+</ul>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-9 canv">
+            <div id="canvas-wrapper">
+                <canvas id="tree_canvas">
+                </canvas>
+            </div>
+            <button id="canvas-zoom-in" type="button mr-0 mt-1" class="btn btn-success">+</button>
+            <button id="canvas-zoom-out" type="button ml-0 mt-1" class="btn btn-warning">-</button>
+        </div>
+        <div class="col-md-3 mt-4">
+            <div class="row mr-0 ml-0">
+                <div class="card" style="width: 18rem;">
+                    <img class="card-img-top" src="../static/teamtree.png" alt="team trees logo">
+                    <div class="card-body">
+                        <h5 class="card-title">Why We Do What We Do</h5>
+                        <p class="card-text">Words with trees is an initiative that hopes to utilize the proven virality of the "Million dollar Homepage" and adds a green twist to it to support an amazing cause.
+                                            We are committed to help #TeamTrees by donating all of our profits to it. For more information about how you can become a more active member, please visit the site.</p>
+                        <a href="https://teamtrees.org/" class="btn btn-success" title="team trees">Team Trees</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+
+{% block scripts %}
+<script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
+<script src="{{ url_for('static', filename='js/ResizeSensor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/misc.js') }}"></script>
+<script src="{{ url_for('static', filename='js/branch.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tree.js') }}"></script>
+<script src="{{ url_for('static', filename='js/init.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buy-branch.js') }}"></script>
+{% endblock %}
