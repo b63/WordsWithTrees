@@ -19,12 +19,17 @@ def buy_branches_get():
     if "filter" in request.args:
         if request.args["filter"] == "visibility":
             cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id'
-                             '= b.id WHERE available_for_purchase=1 ORDER BY b.depth DESC')
+                             '= b.id WHERE available_for_purchase=1 ORDER BY b.depth ASC')
             available_branches = cur.fetchall()
-        if request.args["filter"] == "price":
+        if request.args["filter"] == "price-high":
             cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id'
                              '= b.id WHERE available_for_purchase=1 ORDER BY branches_ownership.price DESC')
             available_branches = cur.fetchall()
+        if request.args["filter"] == "price-low":
+            cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id'
+                             '= b.id WHERE available_for_purchase=1 ORDER BY branches_ownership.price ASC')
+            available_branches = cur.fetchall()
+
     else:
         cur = db.execute('SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id'
                          '= b.id WHERE available_for_purchase=1 ORDER BY b.id DESC')
@@ -56,7 +61,6 @@ def buy_branches_search():
     cur = db.execute("SELECT * FROM branches_ownership INNER JOIN branches b on branches_ownership.branch_id"
                      "= b.id WHERE text LIKE (?) ", ('%'+query+'%',))
     filtered_branches = cur.fetchall()
-
     # get user's name and token amount
     cur = db.execute('SELECT name, token FROM users WHERE id = ?', [user_id])
     user = cur.fetchone()
@@ -64,7 +68,7 @@ def buy_branches_search():
     # get notifications for the user
     cur = db.execute('SELECT notifications.id, message FROM notifications '
                      'JOIN notification_objects ON notifications.entity_id = notification_objects.id '
-                     'WHERE receiver_id = ?', [user_id])
+                     'WHERE receiver_id=?', [user_id])
     notifications = cur.fetchall()
 
     return render_template('buy_branch.html', branches=filtered_branches, user=user, notifications=notifications)

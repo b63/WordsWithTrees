@@ -43,8 +43,8 @@
                 </div>
 
                 <div class="row mt-2 mb-2">
-                    <form class="form-inline">
-                        <input aria-label="Search" class="form-control sm-2 mr-1" placeholder="Search" type="text">
+                    <form class="form-inline" action="{{url_for('buy.buy_branches_search')}}" method="get">
+                        <input aria-label="Search" name="search_field" class="form-control sm-2 mr-1" placeholder="Search" type="text">
                         <div class="dropdown show">
                             <a aria-expanded="false" aria-haspopup="true"
                                class="btn btn-secondary dropdown-toggle bg-success mr-1"
@@ -52,22 +52,21 @@
                                 Filter
                             </a>
                             <div aria-labelledby="dropdownMenuLink" class="dropdown-menu">
-                                <a class="dropdown-item" href="?filter=visibility">Visibility</a>
-                                <a class="dropdown-item" href="?filter=price">Price</a>
+                                <a class="dropdown-item" href="/buy?filter=visibility">Visibility</a>
+                                <a class="dropdown-item" href="/buy?filter=price-low">Price Low->High</a>
+                                <a class="dropdown-item" href="/buy?filter=price-high">Price High->Low</a>
                             </div>
                         </div>
                         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                     </form>
-
-
                 </div>
-
                 <ul class="list-group scroll-box">
                     {% for branch in branches %}
                     <li class="list-group-item">
                         <div class="row">
-                            <div class="col-9 mt-2">{{ branch.text }}
-                                <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
+                            <div class="col-5 mt-2">{{ branch.text }}</div>
+                            <div class="col-4 mt-2">
+                                <span>{{ branch.price }} &Hstrok;</span>
                             </div>
                             <div class="col-3">
                                 <button class="btn btn-info" data-id="{{branch.id}}" data-price="{{ branch.price}}"
