@@ -64,11 +64,11 @@ function init_tree(stage, tree_id, zoom) {
         const x = mousepos.x - rect.x;
         const y = mousepos.y - rect.y;
 
-        if (event.key === 'i') {
-            t.change_zoom(x, y, 1);
-        } else if (event.key === 'o') {
-            t.change_zoom(x, y, -1);
-        }
+        // if (event.key === 'i') {
+        //     t.change_zoom(x, y, 1);
+        // } else if (event.key === 'o') {
+        //     t.change_zoom(x, y, -1);
+        // }
     });
 
     const zoom_click_handler = function zoom_click(dzoom) {

@@ -89,15 +89,15 @@ class Branch(JSONifiable):
             ctx.set_line_width(0.0002)
             ctx.select_font_face('Impact', cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
 
-            max_width = 0.8 * length
+            max_width = 0.6 * length
             msg_extents = ctx.text_extents(msg)
             if msg_extents.width > max_width:
                 num_fillers = 0
                 while msg_extents.width > max_width:
                     if ft_size < 0.0001:
                         break
-                    ft_size /= 2
-                    ctx.set_font_size(width)
+                    ft_size -= 0.00001
+                    ctx.set_font_size(ft_size)
                     msg_extents = ctx.text_extents(msg)
             else:
                 filler_extents = ctx.text_extents(filler)
