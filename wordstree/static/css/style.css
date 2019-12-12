@@ -91,3 +91,38 @@ body {
     }
 
 }
+
+.scroll-box {
+    height: 200px;
+    overflow-y: scroll;
+}
+
+.scroll-box-inv {
+    height: 300px;
+    overflow-y: scroll;
+}
+
+/* Box styles */
+.scroll-box {
+border: none;
+height: 200px;
+overflow-y: scroll;
+}
+/* all scroll bar styles have been found in https://www.quackit.com/html/html_editors/scratchpad/?example=/html/codes/html_scrollbars_webkit_thin_green_and_gold_flat_rounded_corners */
+/* Scrollbar styles */
+ul::-webkit-scrollbar {
+height: 12px;
+}
+
+
+ul::-webkit-scrollbar-track {
+background: #4C2C11 !important;
+border-radius: 10px;
+}
+
+ul::-webkit-scrollbar-thumb {
+border-radius: 10px;
+background: #28a745;
+}
+
+
