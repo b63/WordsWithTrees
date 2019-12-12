@@ -6,7 +6,7 @@
 
 .container-fluid {
     background-color: #f7f7ea;
-    overflow-y: scroll;
+    overflow-y: scroll
 }
 
 html, body {
@@ -89,6 +89,7 @@ body {
         border-radius: 4px;
         margin-bottom: 4px;
     }
+
 
 }
 
