@@ -49,8 +49,10 @@ def signup_as_post():
 
     # automatically log in user and redirect to user's marketplace
     session['user_id'] = user_data['id']
-    session["name"] = user_data["name"]
-    session["token"] = user_data["token"]
+
+    # insert signup and login successful notification
+    db.execute("INSERT INTO notifications (receiver_id, entity_id) VALUES (?, ?)", [user_data["id"], 2])
+    db.commit()
 
     return redirect(url_for("view_inventory.view_inventory"))
 

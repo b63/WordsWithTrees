@@ -11,7 +11,7 @@ def _initial_branches(num_layers):
     try:
         current_app.cli.get_command(current_app, 'add-layer').main(args=[
             '-f', 'db:{}'.format(tree_id), '-n', num_layers, '--owner-id=666', '--bid=True', '--text=HOUSE',
-            '--purchase=True'
+            '--purchase=True', '--price=1'
         ])
     except SystemExit:
         pass

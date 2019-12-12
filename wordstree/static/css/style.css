@@ -74,6 +74,15 @@ body {
     color: white;
 }
 
+.toast-header {
+    background-color: #FFCC00;
+    color: black;
+}
+
+.fade {
+    transition: opacity 1s linear;
+}
+
 @media only screen and (max-width: 768px) {
     #token-amount{
         width: 90px;
@@ -82,6 +91,3 @@ body {
     }
 
 }
-
-
-
