@@ -6,7 +6,7 @@
 
 .container-fluid {
     background-color: #f7f7ea;
-    overflow: scroll;
+    overflow-y: scroll;
 }
 
 html, body {
@@ -125,5 +125,6 @@ border-radius: 10px;
 background: #28a745;
 }
 
-
-
+.btn-info {
+    background-color: #007bff!important;
+}

@@ -30,7 +30,6 @@
     left: 30px;
 }
 
-
 .buy-btn {
     position: absolute;
     right: 30px;
@@ -60,6 +59,7 @@
 
 .btn-danger {
     float: right;
+    border-radius: .25rem;
 }
 
 .form-signin {
