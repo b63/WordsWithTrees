@@ -2,6 +2,7 @@ from wordstree.db import get_db
 from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
 
 from .services import render_service
+from .home import _initial_render
 
 bp = Blueprint('buy', __name__)
 
@@ -9,6 +10,8 @@ bp = Blueprint('buy', __name__)
 @bp.route('/buy', methods=['GET'])
 def buy_branches_get():
     """get all the branches that belong to the given user"""
+    _initial_render()
+
     if session.get('user_id') is None:
         return redirect(url_for('login.login_as_get'))
 

@@ -2,12 +2,16 @@ from wordstree.db import get_db
 from sqlite3 import dbapi2 as sqlite3
 from flask import Blueprint, Flask, request, g, redirect, url_for, render_template, flash, current_app, session
 
+from .home import _initial_render
+
 bp = Blueprint('view_inventory', __name__)
 
 
 @bp.route('/inventory')
 def view_inventory():
     """ Display user's inventory. """
+    _initial_render()
+
     if session.get('user_id') is None:
         return redirect(url_for('login.login_as_get'))
 

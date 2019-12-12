@@ -84,13 +84,24 @@ class Branch(JSONifiable):
         if msg:
             # draw message
             ctx.save()
-            ctx.set_font_size(width*0.6)
+            ft_size = width * 0.6
+            ctx.set_font_size(ft_size)
             ctx.set_line_width(0.0002)
             ctx.select_font_face('Impact', cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
 
+            max_width = 0.8 * length
             msg_extents = ctx.text_extents(msg)
-            filler_extents = ctx.text_extents(filler)
-            num_fillers = max(math.floor((length-msg_extents.width)/filler_extents.x_advance/2)-2, 0)
+            if msg_extents.width > max_width:
+                num_fillers = 0
+                while msg_extents.width > max_width:
+                    if ft_size < 0.0001:
+                        break
+                    ft_size /= 2
+                    ctx.set_font_size(width)
+                    msg_extents = ctx.text_extents(msg)
+            else:
+                filler_extents = ctx.text_extents(filler)
+                num_fillers = max(math.floor((length-msg_extents.width)/filler_extents.x_advance/2)-2, 0)
 
             full_msg = '{}    {}    {}'.format(filler*num_fillers, msg, filler*num_fillers).strip()
             extents = ctx.text_extents(full_msg)

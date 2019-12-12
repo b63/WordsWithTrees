@@ -267,11 +267,25 @@ class DBLoader(Loader):
                 else:
                     zoom_id = result[0]
 
-            cur.execute(
-                'INSERT INTO tiles (tile_index, zoom_id, img_file, json_file, tile_col, tile_row, tile_pos_x, '
-                'tile_pos_y) VALUES (?,?,?,?,?,?,?,?)',
-                [index, zoom_id, img_path, json_path, col, row, x, y]
-            )
+            cur.execute('SELECT tile_id FROM tiles WHERE zoom_id=? AND tile_index=?;', [zoom_id, index])
+            res = cur.fetchone()
+
+            cur.execute('SELECT * FROM zoom_info WHERE zoom_id=?;', [zoom_id])
+            res2 = cur.fetchone()
+            if res2 is None:
+                print('NONE FOR ZOOM_ID', res2)
+            if res is None:
+                cur.execute(
+                    'INSERT INTO tiles (tile_index, zoom_id, img_file, json_file, tile_col, tile_row, tile_pos_x, '
+                    'tile_pos_y) VALUES (?,?,?,?,?,?,?,?)',
+                    [index, zoom_id, img_path, json_path, col, row, x, y]
+                )
+            else:
+                cur.execute(
+                    'UPDATE tiles SET img_file=?, json_file=?, tile_col=?, tile_row=?, tile_pos_x=?,'
+                    ' tile_pos_y=? WHERE tile_id=?;',
+                    [img_path, json_path, col, row, x, y, res['tile_id']]
+                )
 
             db.commit()
 

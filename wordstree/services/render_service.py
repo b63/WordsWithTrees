@@ -13,6 +13,8 @@ __queue = None
 __job_counter = 0
 # list to keep track of jobs that have been completed
 __jobs_finished = []
+# global thread instance
+__thread = Queue(1)
 
 
 def init_queue():
@@ -67,6 +69,30 @@ def _get_finished_jobs():
     """
     global __jobs_finished
     return __jobs_finished
+
+
+def _thread_count():
+    """
+    Returns the number of background threads currently active rendering tiles.
+    :return: number of active threads rendering tiles
+    """
+    global __thread
+    return __thread.qsize()
+
+
+def _set_thread(t):
+    """
+    Adds the passed in thread instance to the global queue keeping track of active threads `__thread`. Pass `None`
+    for :param:`t` to empty the queue.
+
+    :param t: thread to add to queue; since there should only be one active thread rendering the tiles, will raise
+        exception since max size of queue is 1. `None` to empty the queue.
+    """
+    global __thread
+    if t:
+        __thread.put_nowait(t)
+    else:
+        __thread.get_nowait()
 
 
 class JobState(Enum):
@@ -176,6 +202,7 @@ class RenderThread(Thread):
     def run(self):
         with self.__app.app_context():
             _handle_render_jobs()
+        _set_thread(None)
 
 
 def _start_thread():
@@ -186,6 +213,7 @@ def _start_thread():
 
     t = RenderThread(current_app._get_current_object())
     t.start()
+    _set_thread(t)
 
 
 def render(zooms=None):
@@ -210,7 +238,7 @@ def render(zooms=None):
         q.put_nowait(job)
 
         # there should be only one thread doing the rendering
-        if size == 0:
+        if size == 0 and _thread_count() == 0:
             _start_thread()
 
     return min_job_id
