@@ -35,7 +35,7 @@
             <button id="canvas-zoom-out" type="button">-</button>
         </div>
         <div class="col-md-3 mt-4">
-            <div class="row">
+            <div class="row mr-0 ml-0">
                 <div class="col text-center">
                     <p class="h1">Words with Trees</p>
                     <img alt="" height="250" src="../static/tree.png" width="250">
@@ -72,8 +72,8 @@
                     <ul class="list-group">
                         {% for branch in branches %}
                         <li class="list-group-item">{{ branch.text }}
-                            <span class="ml-5 mr-5">${{ branch.price }}</span>
-                            <button class="btn btn-info btn-lg" data-id="{{branch.id}}" data-price="{{ branch.price }}"
+                            <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
+                            <button class="btn btn-info btn-lg" data-id="{{branch.id}}" data-price="{{ branch.price}}"
                                     data-target="#buyModal"
                                     data-text="{{ branch.text }}" data-toggle="modal"
                                     type="button">Buy!
