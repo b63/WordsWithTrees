@@ -84,7 +84,7 @@ class Branch(JSONifiable):
         if msg:
             # draw message
             ctx.save()
-            ctx.set_font_size(width*0.9)
+            ctx.set_font_size(width*0.6)
             ctx.set_line_width(0.0002)
             ctx.select_font_face('Impact', cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
 
