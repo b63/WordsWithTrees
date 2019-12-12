@@ -66,25 +66,21 @@
                     </div>
                 </div>
             </div>
+            <ul class="list-group scroll-box">
+                {% for branch in branches %}
+                <li class="list-group-item">{{ branch.text }}
+                    <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
+                    <button class="btn btn-info btn-lg" data-id="{{branch.id}}" data-price="{{ branch.price}}"
+                            data-target="#buyModal"
+                            data-text="{{ branch.text }}" data-toggle="modal"
+                            type="button">Buy!
+                    </button>
+                </li>
+                {% else %}
+                <li><em>Unbelievable. There are no available branches to purchase </em></li>
+                {% endfor %}
+            </ul>
 
-            <div class="row">
-                <div class="col">
-                    <ul class="list-group">
-                        {% for branch in branches %}
-                        <li class="list-group-item">{{ branch.text }}
-                            <span class="ml-5 mr-5">{{ branch.price }} &Hstrok;</span>
-                            <button class="btn btn-info btn-lg" data-id="{{branch.id}}" data-price="{{ branch.price}}"
-                                    data-target="#buyModal"
-                                    data-text="{{ branch.text }}" data-toggle="modal"
-                                    type="button">Buy!
-                            </button>
-                        </li>
-                        {% else %}
-                        <li><em>Unbelievable. There are no available branches to purchase </em></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
 
             <!-- Modal from https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
             <div class="modal fade" id="buyModal" role="dialog">
