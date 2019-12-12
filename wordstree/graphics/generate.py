@@ -26,7 +26,7 @@ def generate_root() -> Branch:
         Vec(0.5, 0.99),
         **{
             'length': 0.4,
-            'width': 0.008
+            'width': 0.05
         }
     )
 

@@ -6,7 +6,7 @@
 
 .container-fluid {
     background-color: #f7f7ea;
-    overflow:hidden
+    overflow: scroll;
 }
 
 html, body {
@@ -83,4 +83,11 @@ body {
     transition: opacity 1s linear;
 }
 
+@media only screen and (max-width: 768px) {
+    #token-amount{
+        width: 90px;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
 
+}

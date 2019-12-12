@@ -25,7 +25,7 @@ def _initial_render():
 
     if (res is None or len(res) == 0) and not current_app.config['TESTING']:
         # if not testing, render all branches once
-        _initial_branches(2)
+        _initial_branches(1)
         from .services import render_service
         render_service.render(zooms=None)
 

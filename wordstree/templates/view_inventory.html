@@ -8,7 +8,7 @@
 {% block profile %}
 <ul class="navbar-nav ml-md-auto" id="user-info">
     <li class="d-inline p-2 mr-1">Hi, {{ user.name }}</li>
-    <li class="d-inline p-2 bg-primary text-white mr-1">{{ user.token }} &Hstrok;</li>
+    <li class="d-inline p-2 bg-primary text-white mr-1" id="token-amount">{{ user.token }} &Hstrok;</li>
 </ul>
 {% endblock %}
 
@@ -31,6 +31,8 @@
                 <canvas id="tree_canvas">
                 </canvas>
             </div>
+            <button id="canvas-zoom-in" type="button">+</button>
+            <button id="canvas-zoom-out" type="button">-</button>
         </div>
         <div class="col-md-3 mt-4">
             <div class="row">
