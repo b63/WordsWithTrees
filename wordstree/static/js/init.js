@@ -153,7 +153,7 @@ function init(e) {
     document.addEventListener('keydown', function (event) {
         let alt = event.getModifierState('Alt');
         let shift = event.getModifierState('Shift');
-        if (alt && shift && event.key === 'D'){
+        if (shift && event.key === 'ArrowUp'){
             fetch('/api/add-layer', {method: 'GET'})
                 .then(function(response){
                     if(!response.ok || response.status !== 200)
