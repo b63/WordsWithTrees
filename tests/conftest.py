@@ -28,7 +28,8 @@ def app():
 
     os.close(db_file)
     os.unlink(db_path)
-    shutil.rmtree(cache_path)
+    print(cache_path)
+    #shutil.rmtree(cache_path)
 
 
 @pytest.fixture

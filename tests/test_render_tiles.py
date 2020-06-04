@@ -62,8 +62,8 @@ def test_branch_grid_intersection(app: Flask):
 
     test_cases = [
         # [(gridx, gridy), # of branches in the grid cell]
-        [(2, 2), 9],
-        [(1, 2), 9],
+        [(2, 2), 5],
+        [(1, 2), 5],
         [(2, 3), 1],
         [(3, 0), 0]
     ]
